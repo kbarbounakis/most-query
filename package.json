@@ -25,11 +25,7 @@
     }
   ],
   "dependencies": {
-      "array":"1.0.1",
-      "mysql":"2.1.0"
-  },
-  "devDependencies": {
-      "array":"git://github.com/kbarbounakis/most-array.git",
+      "most-array":"git://github.com/kbarbounakis/most-array.git",
       "mysql":"2.1.0"
   },
   "main": "index",
