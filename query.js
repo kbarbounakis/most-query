@@ -1073,13 +1073,11 @@ QueryEntity.prototype.as = function(alias) {
  * @constructor
  */
 function QueryField(obj) {
-    if (typeof  obj === 'string')
-    {
-        /**
-         * @type {string}
-         * @private
-         */
+    if (typeof  obj === 'string') {
         this.$name = obj;
+    }
+    else if (typeof obj === 'object' && obj!=null) {
+        util._extend(this, obj);
     }
 }
 /**
@@ -1236,9 +1234,18 @@ QueryField.prototype.as = function(alias) {
 
 
 QueryField.prototype.name = function() {
+    var name = null;
     if (typeof this.$name === 'string') {
+        name = this.$name
+    }
+    else {
+        var prop = Object.key(this);
+        if (prop) {
+            name = this[prop];
+        }
+    }
+    if (typeof name === 'string') {
         //check if an entity is already defined
-        var name = this.$name;
         var re = new RegExp(QueryField.fieldNameExpression.source);
         if (re.test(name))
             return name;

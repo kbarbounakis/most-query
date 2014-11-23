@@ -68,6 +68,17 @@ if (typeof Object.key !== 'function') {
 function SqlFormatter() {
     //
     this.provider = null;
+    /**
+     * Gets or sets formatter settings
+     * @type {{nameFormat: string}|*}
+     */
+    this.settings = {
+        /**
+         * Gets or sets a format that is going to be applied in field expression e.g. AS [$1] or AS '$1'.
+         * @type {string}
+         */
+        nameFormat : '$1'
+    }
 }
 /**
  * Formats a JSON comparison object to the equivalent sql expression eg. { $gt: 100} as >100, or { $in:[5, 8] } as IN {5,8} etc
@@ -138,7 +149,7 @@ SqlFormatter.prototype.escape = function(value,unquoted)
         if (value instanceof Date)
             return mysql.escape(value);
         if (value.hasOwnProperty('$name'))
-            return value.$name;
+            return this.escapeName(value.$name);
     }
     if (unquoted)
         return value.valueOf();
@@ -185,6 +196,8 @@ SqlFormatter.prototype.formatWhere = function(where)
                 op = '$eq';
                 comparison = {$eq:propertyValue};
             }
+            //escape property name
+            property = this.escapeName(property);
             switch (op) {
                 case '$eq':
                     if (typeof comparison.$eq === 'undefined' || comparison.$eq==null)
@@ -199,7 +212,7 @@ SqlFormatter.prototype.formatWhere = function(where)
                 case '$lte':
                     return util.format('(%s<=%s)', property, self.escape(comparison.$lte));
                 case '$ne':
-                    if (typeof comparison.$ne === 'undefined' || comparison.$eq==null)
+                    if (typeof comparison.$ne === 'undefined' || comparison.$ne==null)
                         return util.format('(NOT %s IS NULL)', property);
                     if (comparison!=null)
                         return util.format('(NOT %s=%s)', property, self.escape(comparison.$ne));
@@ -678,6 +691,7 @@ SqlFormatter.prototype.formatLimitSelect = function(obj) {
 
 SqlFormatter.prototype.formatField = function(obj)
 {
+    var self = this;
     if (obj==null)
         return '';
     if (typeof obj === 'string')
@@ -702,9 +716,9 @@ SqlFormatter.prototype.formatField = function(obj)
         }
         return array(fields).select(function(x) {
             if (QueryField.fieldNameExpression.test(x.valueOf()))
-                return tableName.concat('.').concat(x.valueOf());
+                return self.escapeName(tableName.concat('.').concat(x.valueOf()));
             else
-                return x.valueOf();
+                return self.escapeName(x.valueOf());
         }).toArray().join(', ');
     }
 };
@@ -832,6 +846,13 @@ SqlFormatter.prototype.formatDelete = function(obj)
         sql = sql.concat(' WHERE ',this.formatWhere(obj.$where));
     return sql;
 }
+
+SqlFormatter.prototype.escapeName = function(name) {
+    if (typeof name === 'string')
+        return name.replace(/(\w+)$|^(\w+)$/, this.settings.nameFormat);
+    return name;
+}
+
 /**
  * @param obj {QueryField}
  * @param obj {QueryField}
@@ -850,14 +871,14 @@ SqlFormatter.prototype.formatFieldEx = function(obj, s)
         return null;
     var useAlias = (s=='%f');
     if (prop=='$name') {
-        return obj.$name;
+        return this.escapeName(obj.$name);
     }
     else {
         var expr = obj[prop];
         if (expr==null)
             throw new Error('Field definition cannot be empty while formatting.');
         if (typeof expr === 'string') {
-            return useAlias ? expr.concat(' AS ', prop) : expr;
+            return useAlias ? this.escapeName(expr).concat(' AS ', this.escapeName(prop)) : expr;
         }
         //get aggregate expression
         var alias = prop;
@@ -865,19 +886,19 @@ SqlFormatter.prototype.formatFieldEx = function(obj, s)
         var name = expr[prop], s = null;
         switch (prop) {
             case '$count':
-                s= util.format('COUNT(%s)',name);
+                s= util.format('COUNT(%s)',this.escapeName(name));
                 break;
             case '$min':
-                s= util.format('MIN(%s)',name);
+                s= util.format('MIN(%s)',this.escapeName(name));
                 break;
             case '$max':
-                s= util.format('MAX(%s)',name);
+                s= util.format('MAX(%s)',this.escapeName(name));
                 break;
             case '$avg':
-                s= util.format('AVG(%s)',name);
+                s= util.format('AVG(%s)',this.escapeName(name));
                 break;
             case '$sum':
-                s= util.format('SUM(%s)',name);
+                s= util.format('SUM(%s)',this.escapeName(name));
                 break;
             case '$value':
                 s= this.escape(name)
