@@ -2,7 +2,7 @@
   "name": "most-query",
   "version": "0.1.2",
   "description": "Most Web Framework Database Query Helper Module",
-  "homepage": "http://www.most-framework.com/",
+  "homepage": "https://github.com/kbarbounakis/most-query",
   "repository": {
     "type": "git",
     "url": "https://github.com/kbarbounakis/most-query.git"
