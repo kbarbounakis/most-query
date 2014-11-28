@@ -197,32 +197,32 @@ SqlFormatter.prototype.formatWhere = function(where)
                 comparison = {$eq:propertyValue};
             }
             //escape property name
-            property = this.escapeName(property);
+            var escapedProperty = this.escapeName(property);
             switch (op) {
                 case '$eq':
                     if (typeof comparison.$eq === 'undefined' || comparison.$eq==null)
-                        return util.format('(%s IS NULL)', property);
-                    return util.format('(%s=%s)', property, self.escape(comparison.$eq));
+                        return util.format('(%s IS NULL)', escapedProperty);
+                    return util.format('(%s=%s)', escapedProperty, self.escape(comparison.$eq));
                 case '$gt':
-                    return util.format('(%s>%s)', property, self.escape(comparison.$gt));
+                    return util.format('(%s>%s)', escapedProperty, self.escape(comparison.$gt));
                 case '$gte':
-                    return util.format('(%s>=%s)', property, self.escape(comparison.$gte));
+                    return util.format('(%s>=%s)', escapedProperty, self.escape(comparison.$gte));
                 case '$lt':
-                    return util.format('(%s<%s)', property, self.escape(comparison.$lt));
+                    return util.format('(%s<%s)', escapedProperty, self.escape(comparison.$lt));
                 case '$lte':
-                    return util.format('(%s<=%s)', property, self.escape(comparison.$lte));
+                    return util.format('(%s<=%s)', escapedProperty, self.escape(comparison.$lte));
                 case '$ne':
                     if (typeof comparison.$ne === 'undefined' || comparison.$ne==null)
-                        return util.format('(NOT %s IS NULL)', property);
+                        return util.format('(NOT %s IS NULL)', escapedProperty);
                     if (comparison!=null)
-                        return util.format('(NOT %s=%s)', property, self.escape(comparison.$ne));
+                        return util.format('(NOT %s=%s)', escapedProperty, self.escape(comparison.$ne));
                     else
-                        return util.format('(NOT %s IS NULL)', property);
+                        return util.format('(NOT %s IS NULL)', escapedProperty);
                 case '$in':
                     if (util.isArray(comparison.$in)) {
                         if (comparison.$in.length==0)
-                            return util.format('(%s IN (NULL))', property);
-                        sql = '('.concat(property,' IN (',array(comparison.$in).select(function (x) {
+                            return util.format('(%s IN (NULL))', escapedProperty);
+                        sql = '('.concat(escapedProperty,' IN (',array(comparison.$in).select(function (x) {
                             return self.escape(x!=null ? x: null)
                         }).toArray().join(', '),'))');
                         return sql;
@@ -232,7 +232,7 @@ SqlFormatter.prototype.formatWhere = function(where)
                         var sq = util._extend(new QueryExpression(), comparison.$in);
                         if (sq.$select) {
                             //if sub query is a select expression
-                            return util.format('(%s IN (%s))', property, self.format(sq));
+                            return util.format('(%s IN (%s))', escapedProperty, self.format(sq));
                         }
                     }
                     //otherwise throw error
@@ -240,8 +240,8 @@ SqlFormatter.prototype.formatWhere = function(where)
                 case '$nin':
                     if (util.isArray(comparison.$in)) {
                         if (comparison.$in.length==0)
-                            return util.format('(NOT %s IN (NULL))', property);
-                        sql = '(NOT '.concat(property,' IN (',array(comparison.$in).select(function (x) {
+                            return util.format('(NOT %s IN (NULL))', escapedProperty);
+                        sql = '(NOT '.concat(escapedProperty,' IN (',array(comparison.$in).select(function (x) {
                             return self.escape(x!=null ? x: null)
                         }).toArray().join(', '),'))');
                         return sql;
@@ -251,7 +251,7 @@ SqlFormatter.prototype.formatWhere = function(where)
                         var sq = util._extend(new QueryExpression(), comparison.$in);
                         if (sq.$select) {
                             //if sub query is a select expression
-                            return util.format('(NOT %s IN (%s))', property, self.format(sq));
+                            return util.format('(NOT %s IN (%s))', escapedProperty, self.format(sq));
                         }
                     }
                     //otherwise throw error
