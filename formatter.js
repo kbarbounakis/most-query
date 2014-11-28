@@ -573,12 +573,12 @@ SqlFormatter.prototype.formatSelect = function(obj)
     if (obj.$fixed) {
         sql = sql.concat('SELECT * FROM (SELECT ', array(fields).select(function(x) {
             return $this.format(x,'%f');
-        }).toArray().join(', '), ') ', entity);
+        }).toArray().join(', '), ') ', $this.escapeName(entity));
     }
     else {
         sql = sql.concat(obj.$distinct ? 'SELECT DISTINCT ' : 'SELECT ', array(fields).select(function(x) {
             return $this.format(x,'%f');
-        }).toArray().join(', '), ' FROM ', entity);
+        }).toArray().join(', '), ' FROM ', $this.escapeName(entity));
     }
 
 
@@ -598,7 +598,7 @@ SqlFormatter.prototype.formatSelect = function(obj)
                 //get join table name
                 var table = Object.key(x.$entity);
                 //get on statement (the join comparison)
-                sql = sql.concat(' INNER JOIN ').concat(table);
+                sql = sql.concat(' INNER JOIN ').concat($this.escapeName(table));
                 //add alias
                 if (x.$entity.$as)
                     sql = sql.concat(' AS ').concat(x.$entity.$as);
@@ -788,7 +788,7 @@ SqlFormatter.prototype.formatInsert = function(obj)
         if (obj1.hasOwnProperty(prop))
             props.push(prop);
     //add basic INSERT statement
-    sql = sql.concat('INSERT INTO ', entity, '(' , props.join(', '), ') VALUES (',
+    sql = sql.concat('INSERT INTO ', self.escapeName(entity), '(' , props.map(function(x) { return self.escapeName(x); }).join(', '), ') VALUES (',
         array(props).select(function(x)
         {
             var value = obj1[x];
@@ -841,7 +841,7 @@ SqlFormatter.prototype.formatDelete = function(obj)
     //get entity name
     var entity = obj.$delete;
     //add basic INSERT statement
-    sql = sql.concat('DELETE FROM ', entity);
+    sql = sql.concat('DELETE FROM ', this.escapeName(entity));
     if (Object.isObject(obj.$where))
         sql = sql.concat(' WHERE ',this.formatWhere(obj.$where));
     return sql;

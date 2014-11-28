@@ -124,6 +124,14 @@ var qry = {
         return formatter.format(query, s);
     },
     /**
+     * @param {string} query
+     * @param {*} values
+     */
+    prepare: function(query, values) {
+        var mysql=require('mysql');
+        return mysql.format(query,values);
+    },
+    /**
      * Creates an entity reference that is going to be used in query expressions.
      * @param entity {string} The entity name
      * @param fields {Array=} An array that represents the entity's field collection to be used.
