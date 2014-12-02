@@ -1,6 +1,6 @@
 {
   "name": "most-query",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Most Web Framework Database Query Helper Module",
   "homepage": "https://github.com/kbarbounakis/most-query",
   "repository": {
@@ -8,12 +8,12 @@
     "url": "https://github.com/kbarbounakis/most-query.git"
   },
   "keywords": [
-	"database",
-	"db",
-	"query",
-	"where",
-	"sql",
-	"rdbms"
+    "database",
+    "db",
+    "query",
+    "where",
+    "sql",
+    "rdbms"
   ],
   "author": {
     "name": "Kyriakos Barbounakis",
@@ -25,11 +25,11 @@
     }
   ],
   "dependencies": {
-      "most-array":"git://github.com/kbarbounakis/most-array.git",
-      "mysql":"2.1.0"
+    "most-array": "git://github.com/kbarbounakis/most-array.git",
+    "mysql": "2.1.0"
   },
   "main": "index",
-  "scripts": { },
+  "scripts": {},
   "_id": "most-query@0.1.3",
   "_from": "most-query@"
 }
