@@ -816,11 +816,11 @@ SqlFormatter.prototype.formatUpdate = function(obj)
         if (obj1.hasOwnProperty(prop))
             props.push(prop);
     //add basic INSERT statement
-    sql = sql.concat('UPDATE ', entity, ' SET ',
+    sql = sql.concat('UPDATE ', self.escapeName(entity), ' SET ',
         array(props).select(function(x)
         {
             var value = obj1[x];
-            return x.concat('=', self.escape(value!=null ? value: null));
+            return self.escapeName(x).concat('=', self.escape(value!=null ? value: null));
         }).toArray().join(', '));
     //add WHERE statement
     if (Object.isObject(obj.$where))
