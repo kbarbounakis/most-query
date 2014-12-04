@@ -916,7 +916,7 @@ SqlFormatter.prototype.formatFieldEx = function(obj, s)
                 else
                     throw new Error('The specified function is not yet implemented.');
         }
-        return useAlias ? s.concat(' AS ', alias) : s;
+        return useAlias ? s.concat(' AS ', this.escapeName(alias)) : s;
     }
 }
 /**
