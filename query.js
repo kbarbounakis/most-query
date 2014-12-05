@@ -949,7 +949,7 @@ QueryExpression.prototype.greaterOrEqual = function(value)
  */
 QueryExpression.prototype.skip = function(n)
 {
-    this.$skip = n;
+    this.$skip = isNaN(n) ? 0 : n;
     return this;
 };
 
@@ -960,7 +960,7 @@ QueryExpression.prototype.skip = function(n)
  */
 QueryExpression.prototype.take = function(n)
 {
-    this.$take = n;
+    this.$take = isNaN(n) ? 0 : n;
     return this;
 };
 /**
@@ -1402,7 +1402,7 @@ OpenDataQuery.prototype.select = function(attr) {
  * @returns OpenDataQuery
  */
 OpenDataQuery.prototype.take = function(val) {
-    this.$top = val;
+    this.$top = isNaN(val) ? 0 : val;
     return this;
 }
 /**
@@ -1410,7 +1410,7 @@ OpenDataQuery.prototype.take = function(val) {
  * @returns OpenDataQuery
  */
 OpenDataQuery.prototype.skip = function(val) {
-    this.$skip = val;
+    this.$skip = isNaN(val) ? 0 : val;
     return this;
 }
 
