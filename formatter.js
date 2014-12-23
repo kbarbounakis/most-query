@@ -157,6 +157,15 @@ SqlFormatter.prototype.escape = function(value,unquoted)
         return mysql.escape(value);
 }
 
+/**
+ * Escapes an object or a value and returns the equivalen sql value.
+ * @param {*} value
+ */
+SqlFormatter.prototype.escapeConstant = function(value,unquoted)
+{
+    return this.escape(value,unquoted);
+}
+
 SqlFormatter.prototype.formatWhere = function(where)
 {
     var self = this;
@@ -704,7 +713,7 @@ SqlFormatter.prototype.formatField = function(obj)
     if (typeof obj === 'object') {
         //if field is a constant e.g. { $value:1000 }
         if (obj.hasOwnProperty('$value'))
-            return this.escape(obj['$value']);
+            return this.escapeConstant(obj['$value']);
         //get table name
         var tableName = Object.key(obj);
         var fields = [];
@@ -901,7 +910,7 @@ SqlFormatter.prototype.formatFieldEx = function(obj, s)
                 s= util.format('SUM(%s)',this.escapeName(name));
                 break;
             case '$value':
-                s= this.escape(name)
+                s= this.escapeConstant(name)
                 break;
             default :
                 var fn = this[prop];
