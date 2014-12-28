@@ -47,7 +47,7 @@ if (typeof Array.prototype.forEach === 'undefined') {
      * @param Function(*) callback
      * @param {*=} thisArg
      */
-    Array.prototype.forEach = function (callback, thisArg) {
+    var forEach = function (callback, thisArg) {
         var T, k;
         if (this == null) {
             throw new TypeError(" this is null or not defined");
@@ -70,6 +70,17 @@ if (typeof Array.prototype.forEach === 'undefined') {
             k++;
         }
     };
+
+    if (Object.defineProperty) {
+        try {
+            Object.defineProperty(Array.prototype, 'forEach', {
+                value: forEach, configurable: true, enumerable: false, writable: true
+            });
+        } catch(e) {}
+    }
+
+    if (!Array.prototype.forEach) { Array.prototype.forEach = forEach; }
+
 }
 
 if (typeof Object.isNullOrUndefined !== 'function') {
