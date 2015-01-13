@@ -128,6 +128,8 @@ var qry = {
      * @param {*} values
      */
     prepare: function(query, values) {
+        if (typeof values === 'undefined' || values===null)
+            return query;
         var mysql=require('mysql');
         return mysql.format(query,values);
     },
