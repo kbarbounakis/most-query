@@ -1,65 +1,69 @@
 /**
  * Created by kyriakos barbounakis on 2/15/14.
  */
+/**
+ * @ignore
+ */
 var util = require('util'),
     odata = require('./odata'),
     frmt = require('./formatter'),
     /**
-     * @class {SqlFormatter}
+     * @class SqlFormatter
      * @constructor
      */
     SqlFormatter = frmt.SqlFormatter,
     query = require('./query'),
     /**
-     * @class {QueryExpression}
-     * @constructor
+     * @constructs QueryExpression
      */
     QueryExpression = query.QueryExpression,
     /**
-     * @class {QueryField}
-     * @constructor
+     * @constructs QueryField
      */
     QueryField = query.QueryField,
     /**
-     * @class {QueryEntity}
-     * @constructor
+     * @constructs QueryEntity
      */
     QueryEntity = query.QueryEntity,
     /**
-     * @class {ODataFormatter}
-     * @constructor
+     * @constructs ODataFormatter
      */
     OpenDataQuery = query.OpenDataQuery;
 
+/**
+ * @module most-query
+ */
 var qry = {
     /**
      * @namespace
+     * @memberOf module:most-query
      */
     classes: {
         /**
-         * @constructor
+         * @constructs QueryExpression
          */
         QueryExpression:QueryExpression,
         /**
-         * @constructor
+         * @constructs QueryField
          */
         QueryField:QueryField,
         /**
-         * @constructor
+         * @constructs QueryEntity
          */
         QueryEntity:QueryEntity,
         /**
-         * @constructor
+         * @constructs SqlFormatter
          */
         SqlFormatter:SqlFormatter,
         /**
-         * @constructor
+         * @constructs OpenDataQuery
          */
         OpenDataQuery:OpenDataQuery
     },
     /**
      * @returns {QueryExpression}
-     * @param entity {string=} - The entity that is going to be used in this operation
+     * @param {string=} entity - The entity that is going to be used in this operation
+     * @memberOf module:most-query
      */
     query: function(entity) {
 
@@ -71,6 +75,7 @@ var qry = {
      * Initializes a QueryExpression instance.
      * @returns {QueryExpression}
      * @param  {String|*} obj
+     * @memberOf module:most-query
      */
     where: function(obj) {
         var q = new QueryExpression();
@@ -80,6 +85,7 @@ var qry = {
      * Initializes a select query expression from the specified entity
      * @returns {QueryExpression}
      * @param entity {string} - The entity that is going to be used in this operation
+     * @memberOf module:most-query
      */
     selectFrom: function(entity) {
 
@@ -91,6 +97,7 @@ var qry = {
      * Initializes a delete query expression from the specified entity
      * @param entity {string}
      * @returns {QueryExpression}
+     * @memberOf module:most-query
      */
     deleteFrom: function(entity) {
         var q = new QueryExpression();
@@ -98,8 +105,9 @@ var qry = {
         return q;
     },
     /**
-     * @param obj {*}
+     * @param {*} obj
      * @returns {QueryExpression}
+     * @memberOf module:most-query
      */
     insert: function(obj) {
         var q = new QueryExpression();
@@ -108,6 +116,7 @@ var qry = {
     /**
      * @param {string} entity
      * @returns {QueryExpression}
+     * @memberOf module:most-query
      */
     update: function(entity) {
         var q = new QueryExpression();
@@ -115,9 +124,10 @@ var qry = {
     },
     /**
      * Formats a query object and returns the equivalent SQL statement
-     * @param query {QueryExpression|*}
-     * @param query {string=}
+     * @param {QueryExpression|*} query
+     * @param {string=} s
      * @returns {string}
+     * @memberOf module:most-query
      */
     format: function(query, s) {
         var formatter = new SqlFormatter();
@@ -126,6 +136,8 @@ var qry = {
     /**
      * @param {string} query
      * @param {*} values
+     * @returns {string}
+     * @memberOf module:most-query
      */
     prepare: function(query, values) {
         if (typeof values === 'undefined' || values===null)
@@ -135,24 +147,33 @@ var qry = {
     },
     /**
      * Creates an entity reference that is going to be used in query expressions.
-     * @param entity {string} The entity name
-     * @param fields {Array=} An array that represents the entity's field collection to be used.
-     * @returns {*}
+     * @param {string} entity The entity name
+     * @param {Array=} fields An array that represents the entity's field collection to be used.
+     * @returns {QueryEntity|*}
+     * @memberOf module:most-query
      */
     createEntity: function(entity, fields) {
         var obj = new QueryEntity(entity);
         obj[entity] = fields || [];
         return obj;
     },
+    /**
+     * Creates an entity reference that is going to be used in query expressions.
+     * @param {string} entity - The entity name
+     * @param {Array=} fields - An array that represents the entity's field collection to be used.
+     * @returns {QueryEntity|*}
+     * @memberOf module:most-query
+     */
     entity: function(entity, fields) {
         var obj = new QueryEntity(entity);
         obj[entity] = fields || [];
         return obj;
     },
     /**
-     * Creates an field reference that is going to be used in query expressions (like join statements etc).
-     * @param entity {string} The entity name
-     * @param name {string} The field name
+     * Creates a field reference that is going to be used in query expressions (like join statements etc).
+     * @param {string} entity - The entity name
+     * @param {string} name - The field name
+     * @memberOf module:most-query
      */
     createField: function(entity, name) {
         var f = {};
@@ -169,6 +190,7 @@ var qry = {
     },
     /**
      * @namespace
+     * @memberOf module:most-query
      */
     fields: {
         /**
@@ -284,11 +306,12 @@ var qry = {
     },
     /**
      * @namespace
+     * @memberOf module:most-query
      */
     openData: {
         /**
          * @param {String} str The open data filter expression
-         * @param {Function} callback The callback function
+         * @param {function} callback The callback function
          * @returns {QueryExpression} The equivalent query expression
          */
         parse:function(str, callback) {
@@ -307,5 +330,8 @@ var qry = {
 
 if (typeof exports !== 'undefined')
 {
+    /**
+     * @see qry
+     */
     module.exports = qry;
 }

@@ -6,18 +6,15 @@ var mysql = require('mysql'),
     array = require('most-array'),
     query = require('./query'),
     /**
-     * @class {QueryExpression}
-     * @constructor
+     * @constructs QueryExpression
      */
     QueryExpression = query.QueryExpression,
     /**
-     * @class {QueryField}
-     * @constructor
+     * @constructs QueryField
      */
     QueryField = query.QueryField,
     /**
-     * @class {QueryEntity}
-     * @constructor
+     * @constructs QueryEntity
      */
     QueryEntity = query.QueryEntity;
 
@@ -135,8 +132,10 @@ SqlFormatter.prototype.formatComparison = function(comparison)
     }
 };
 /**
- * Escapes an object or a value and returns the equivalen sql value.
- * @param {*} value
+ * Escapes an object or a value and returns the equivalent sql value.
+ * @param {*} value - A value that is going to be escaped for SQL statements
+ * @param {boolean} unquoted - An optional value that indicates whether the resulted string will be quoted or not.
+ * @returns {string} - The equivalent SQL string value
  */
 SqlFormatter.prototype.escape = function(value,unquoted)
 {
@@ -158,14 +157,20 @@ SqlFormatter.prototype.escape = function(value,unquoted)
 }
 
 /**
- * Escapes an object or a value and returns the equivalen sql value.
- * @param {*} value
+ * Escapes an object or a value and returns the equivalent sql value.
+ * @param {*} value - A value that is going to be escaped for SQL statements
+ * @param {boolean} unquoted - An optional value that indicates whether the resulted string will be quoted or not.
+ * returns {string} - The equivalent SQL string value
  */
 SqlFormatter.prototype.escapeConstant = function(value,unquoted)
 {
     return this.escape(value,unquoted);
 }
-
+/**
+ * Formats a where expression object and returns the equivalen SQL string expression.
+ * @param {*} where - An object that represents the where expression object to be formatted.
+ * @returns {string|*}
+ */
 SqlFormatter.prototype.formatWhere = function(where)
 {
     var self = this;
@@ -308,8 +313,9 @@ SqlFormatter.prototype.formatWhere = function(where)
 
 /**
  * Implements startsWith(a,b) expression formatter.
- * @param p0 {*}
- * @param p1 {*}
+ * @param {*} p0
+ * @param {*} p1
+ * @returns {string}
  */
 SqlFormatter.prototype.$startswith = function(p0, p1)
 {
@@ -321,8 +327,9 @@ SqlFormatter.prototype.$startswith = function(p0, p1)
 
 /**
  * Implements endsWith(a,b) expression formatter.
- * @param p0 {*}
- * @param p1 {*}
+ * @param {*} p0
+ * @param {*} p1
+ * @returns {string}
  */
 SqlFormatter.prototype.$endswith = function(p0, p1)
 {
@@ -335,7 +342,8 @@ SqlFormatter.prototype.$endswith = function(p0, p1)
 
 /**
  * Implements length(a) expression formatter.
- * @param p0 {*}
+ * @param {*} p0
+ * @returns {string}
  */
 SqlFormatter.prototype.$length = function(p0)
 {
@@ -344,7 +352,8 @@ SqlFormatter.prototype.$length = function(p0)
 
 /**
  * Implements trim(a) expression formatter.
- * @param p0 {*}
+ * @param {*} p0
+ * @returns {string}
  */
 SqlFormatter.prototype.$trim = function(p0)
 {
@@ -354,8 +363,9 @@ SqlFormatter.prototype.$trim = function(p0)
 
 /**
  * Implements concat(a,b) expression formatter.
- * @param p0 {*}
- * @param p1 {*}
+ * @param {*} p0
+ * @param {*} p1
+ * @returns {string}
  */
 SqlFormatter.prototype.$concat = function(p0, p1)
 {
@@ -366,14 +376,13 @@ SqlFormatter.prototype.$concat = function(p0, p1)
 
 /**
  * Implements indexOf(str,substr) expression formatter.
- * @param {String} p0 The source string
- * @param {String} p1 The string to search for
+ * @param {string} p0 The source string
+ * @param {string} p1 The string to search for
+ * @returns {string}
  */
 SqlFormatter.prototype.$indexof = function(p0, p1)
 {
-
-    var result = util.format('LOCATE(%s,%s)', this.escape(p1), this.escape(p0));
-    return result;
+    return util.format('LOCATE(%s,%s)', this.escape(p1), this.escape(p0));
 };
 
 /**
@@ -413,8 +422,9 @@ SqlFormatter.prototype.$toupper = function(p0)
 
 /**
  * Implements contains(a,b) expression formatter.
- * @param p0 {*}
- * @param p1 {*}
+ * @param {*} p0
+ * @param {*} p1
+ * @returns {string}
  */
 SqlFormatter.prototype.$contains = function(p0, p1)
 {
@@ -442,9 +452,10 @@ SqlFormatter.prototype.$ceiling = function(p0) { return util.format('CEILING(%s)
 
 
 /**
- * Implements length(a) expression formatter.
- * @param p0 {*}
- * @param p1 (*)
+ * Implements round(a) expression formatter.
+ * @param {*} p0
+ * @param {*=} p1
+ * @returns {string}
  */
 SqlFormatter.prototype.$round = function(p0,p1) {
     if (Object.isNullOrUndefined(p1))
@@ -454,8 +465,9 @@ SqlFormatter.prototype.$round = function(p0,p1) {
 
 /**
  * Implements a + b expression formatter.
- * @param p0 {*}
- * @param p1 {*}
+ * @param {*} p0
+ * @param {*} p1
+ * @returns {string}
  */
 SqlFormatter.prototype.$add = function(p0, p1)
 {
@@ -464,7 +476,11 @@ SqlFormatter.prototype.$add = function(p0, p1)
         return '0';
     return util.format('(%s + %s)', this.escape(p0), this.escape(p1));
 };
-
+/**
+ * Validates whether the given parameter is a field object or not.
+ * @param obj
+ * @returns {boolean}
+ */
 SqlFormatter.prototype.isField = function(obj) {
     if (obj==null || typeof obj==='undefined')
         return false;
@@ -476,8 +492,9 @@ SqlFormatter.prototype.isField = function(obj) {
 
 /**
  * Implements a - b expression formatter.
- * @param p0 {*}
- * @param p1 {*}
+ * @param {*} p0
+ * @param {*} p1
+ * @returns {string}
  */
 SqlFormatter.prototype.$sub = function(p0, p1)
 {

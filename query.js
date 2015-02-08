@@ -1,7 +1,9 @@
 /**
  * Created by kbarbounakis on 16/7/2014.
  */
-
+/**
+ * @ignore
+ */
 var util = require('util');
 
 if (!Object.keys) {
@@ -44,8 +46,9 @@ if (!Object.keys) {
 // Reference: http://es5.github.com/#x15.4.4.18
 if (typeof Array.prototype.forEach === 'undefined') {
     /**
-     * @param Function(*) callback
+     * @param {function(*)} callback
      * @param {*=} thisArg
+     * @name Array.forEach
      */
     var forEach = function (callback, thisArg) {
         var T, k;
@@ -197,7 +200,8 @@ function QueryExpression()
     this.$prepared = undefined;
     /**
      * Represents a select query with only fixed values e.g. SELECT * FROM (SELECT 1 AS id,'test' AS title) t0
-     * @type {undefined}
+     * @type {*}
+     * @private
      */
     this.$fixed = undefined;
     /**
@@ -208,7 +212,13 @@ function QueryExpression()
 }
 
 /**
- * Clones current object
+ * Clones the current expression and returns a new QueryExpression object.
+ * @example
+ * var q = new QueryExpression();
+ * //do some stuff
+ * //...
+ * //clone expression
+ * var q1 = q.clone();
  * @returns {QueryExpression}
  */
 QueryExpression.prototype.clone = function()
@@ -217,7 +227,7 @@ QueryExpression.prototype.clone = function()
 };
 
 /**
- * Sets the alias of a QueryExpression instance. This alias is going to be used in sub-query operations
+ * Sets the alias of a QueryExpression instance. This alias is going to be used in sub-query operations.
  * @returns {QueryExpression}
  */
 QueryExpression.prototype.as = function(alias)
@@ -774,7 +784,10 @@ QueryExpression.prototype.and = function(name)
     return this;
 };
 /**
- * @param value {*}
+ * Prepares an equal expression.
+ * @example
+ * q.where('id').equal(10) //id=10 expression
+ * @param {*} value - A value that represents the right part of the prepared expression
  * @returns {QueryExpression}
  */
 QueryExpression.prototype.equal = function(value)
@@ -786,10 +799,19 @@ QueryExpression.prototype.equal = function(value)
     }
     return this;
 };
-
+/**
+ * Prepares an equal expression.
+ * @example
+ * q.where('id').eq(10) //id=10 expression
+ * @param {*} value
+ * @returns {QueryExpression}
+ */
 QueryExpression.prototype.eq = QueryExpression.prototype.equal;
 /**
- * @param value {*}
+ * Prepares a not equal expression.
+ * @example
+ * q.where('id').notEqual(10) //id<>10 expression
+ * @param {*} value - A value that represents the right part of the prepared expression
  * @returns {QueryExpression}
  */
 QueryExpression.prototype.notEqual = function(value)
@@ -803,8 +825,10 @@ QueryExpression.prototype.notEqual = function(value)
 };
 
 /**
- *
- * @param values {Array}
+ * Prepares an in statement expression
+ * @example
+ * q.where('id').in([10, 11, 12]) //id in (10,11,12) expression
+ * @param {Array} values - An array of values that represents the right part of the prepared expression
  * @returns {QueryExpression}
  */
 QueryExpression.prototype.in = function(values)
@@ -893,7 +917,14 @@ QueryExpression.prototype.endsWith = function(value)
 };
 
 /**
- * @param value {*}
+ * Prepares a contains expression.
+ * @example
+ * var qry = require('most-query');
+ * var q = qry.query('Person').where('first').contains('om').select(['id','first', 'last']);
+ * var formatter = new qry.classes.SqlFormatter();
+ * console.log(formatter.format(q));
+ * //returns SELECT Person.id, Person.first, Person.last FROM Person WHERE ((first REGEXP 'om')=true)
+ * @param  {*} value - A value that represents the right part of the expression
  * @returns {QueryExpression}
  */
 QueryExpression.prototype.contains = function(value)
@@ -1324,18 +1355,22 @@ QueryField.sum = function(name) {
 function OpenDataQuery() {
     /**
      * Gets or sets a string that represents the target model
+     * @private
      * @type {String}
      */
     this.$model = undefined;
     /**
      * @type {String}
+     * @private
      */
     this.$filter = undefined;
     /**
      * @type {number}
+     * @private
      */
     this.$top = undefined;
     /**
+     * @private
      * @type {number}
      */
     this.$skip = undefined;
