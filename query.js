@@ -412,7 +412,7 @@ QueryExpression.prototype.distinct = function(value)
 };
 
 /**
- * @param name {string|QueryField}
+ * @param name {string|QueryField|*}
  * @returns {QueryExpression}
  */
 QueryExpression.prototype.where = function(name)
@@ -420,7 +420,18 @@ QueryExpression.prototype.where = function(name)
     if (name===undefined)
         return this;
     this.$where = null;
-    this.privates.__prop = name.valueOf();
+    if (name instanceof QueryField) {
+        var alias = name.as();
+        if (alias) {
+            this.privates.__prop = name[alias];
+        }
+        else {
+            this.privates.__prop = name.valueOf();
+        }
+    }
+    else {
+        this.privates.__prop = name.valueOf();
+    }
     return this;
 };
 /**
