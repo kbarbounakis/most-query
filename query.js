@@ -421,13 +421,7 @@ QueryExpression.prototype.where = function(name)
         return this;
     this.$where = null;
     if (name instanceof QueryField) {
-        var alias = name.as();
-        if (alias) {
-            this.privates.__prop = name[alias];
-        }
-        else {
-            this.privates.__prop = name.valueOf();
-        }
+        this.privates.__prop = name.nameOf();
     }
     else {
         this.privates.__prop = name.valueOf();
@@ -781,14 +775,19 @@ QueryExpression.prototype.__append = function(expr) {
     delete this.privates.__expr;
 };
 /**
- * @param name {string}
+ * @param name {string|QueryField}
  * @returns {QueryExpression}
  */
 QueryExpression.prototype.or = function(name)
 {
     if (name===undefined)
         return this;
-    this.privates.__prop = name.valueOf();
+    if (name instanceof QueryField) {
+        this.privates.__prop = name.nameOf();
+    }
+    else {
+        this.privates.__prop = name.valueOf();
+    }
     this.privates.__expr = '$or';
     return this;
 };
@@ -800,7 +799,12 @@ QueryExpression.prototype.and = function(name)
 {
     if (name===undefined)
         return this;
-    this.privates.__prop = name.valueOf();
+    if (name instanceof QueryField) {
+        this.privates.__prop = name.nameOf();
+    }
+    else {
+        this.privates.__prop = name.valueOf();
+    }
     this.privates.__expr = '$and';
     return this;
 };
@@ -1267,7 +1271,7 @@ QueryField.prototype.max = function(name) {
 
 /**
  *
- * @param {String} alias
+ * @param {String=} alias
  * @returns {QueryField|String}
  */
 QueryField.prototype.as = function(alias) {
@@ -1317,6 +1321,16 @@ QueryField.prototype.name = function() {
     }
     return null;
 };
+
+QueryField.prototype.nameOf = function() {
+    var alias = this.as();
+    if (alias) {
+        return this[alias];
+    }
+    else {
+        return this.$name;
+    }
+}
 
 QueryField.prototype.valueOf = function() {
     return this.$name;
