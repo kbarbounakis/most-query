@@ -631,7 +631,8 @@ SqlFormatter.prototype.formatSelect = function(obj)
                 //get join table name
                 var table = Object.key(x.$entity);
                 //get on statement (the join comparison)
-                sql = sql.concat(' INNER JOIN ').concat($this.escapeName(table));
+                var joinType = (x.$entity.$join || 'inner').toUpperCase();
+                sql = sql.concat(' '+ joinType + ' JOIN ').concat($this.escapeName(table));
                 //add alias
                 if (x.$entity.$as)
                     sql = sql.concat(' AS ').concat(x.$entity.$as);

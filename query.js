@@ -1132,7 +1132,21 @@ QueryEntity.prototype.select = function(name) {
 QueryEntity.prototype.as = function(alias) {
     this.$as = alias;
     return this;
-}
+};
+
+QueryEntity.prototype.inner = function() {
+    this.$join = 'inner';
+    return this;
+};
+
+QueryEntity.prototype.left = function() {
+    this.$join = 'left';
+    return this;
+};
+QueryEntity.prototype.right = function() {
+    this.$join = 'right';
+    return this;
+};
 
 /**
  * @class QueryField

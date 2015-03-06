@@ -433,7 +433,19 @@ OpenDataParser.prototype.parseMember = function(callback) {
             callback.call(self, new Error('Expected identifier.'));
         }
         else {
-            self.resolveMember(this.currentToken.identifier, function(err, member) {
+            var identifier = this.currentToken.identifier;
+            if (this.nextToken.syntax==SyntaxToken.Slash.syntax) {
+                //read syntax token
+                this.moveNext();
+                //get next token
+                if (this.nextToken.type !== 'Identifier')
+                    callback.call(self, new Error('Expected identifier.'));
+                //read identifier token
+                this.moveNext();
+                //format identifier
+                identifier += '/' + this.currentToken.identifier;
+            }
+            self.resolveMember(identifier, function(err, member) {
                 callback.call(self, err,expressions.createMemberExpression(member));
             });
         }
