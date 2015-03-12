@@ -26,7 +26,8 @@
   ],
   "dependencies": {
     "most-array": "~1.0.1",
-    "mysql": "2.1.0"
+    "mysql": "2.1.0",
+    "jsep": "~0.3.0"
   },
   "main": "index",
   "scripts": {},

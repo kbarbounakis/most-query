@@ -247,6 +247,32 @@ MethodCallExpression.prototype.exprOf = function() {
 }
 
 var expressions = {
+
+    Operators : {
+        Not:'$not',
+        // Multiplicative
+        Mul:'$mul',
+        Div:'$div',
+        Mod:'$mod',
+        // Additive
+        Add:'$add',
+        Sub:'$sub',
+        // Relational and type testing
+        Lt:'$lt',
+        Gt:'$gt',
+        Le:'$lte',
+        Ge:'$gte',
+        // Equality
+        Eq:'$eq',
+        Ne:'$ne',
+        // In Values
+        In:'$in',
+        NotIn:'$nin',
+        // Conditional AND
+        And:'$and',
+        // Conditional OR
+        Or:'$or'
+    },
     /**
      * @class ArithmeticExpression
      */

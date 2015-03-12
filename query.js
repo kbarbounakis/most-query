@@ -14,7 +14,7 @@
 /**
  * @ignore
  */
-var util = require('util');
+var util = require('util'), _=require('./underscore-extra');
 
 if (!Object.keys) {
     Object.keys = (function () {
@@ -428,6 +428,19 @@ QueryExpression.prototype.where = function(name)
     }
     return this;
 };
+
+/**
+ * Injects the given filter expression into the current query expression
+ * @param {*} where - An object that represents a filter expression
+ * @returns {QueryExpression}
+ */
+QueryExpression.prototype.injectWhere = function(where)
+{
+    if (_.isNullOrUndefined(where))
+        return this;
+    this.$where = where;
+};
+
 /**
  * Initializes a delete query and sets the entity name that is going to be used in this query.
  * @param entity {string}

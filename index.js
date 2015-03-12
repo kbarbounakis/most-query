@@ -14,6 +14,7 @@
 var util = require('util'),
     odata = require('./odata'),
     frmt = require('./formatter'),
+    closures = require('./closures'),
     /**
      * @class SqlFormatter
      * @constructor
@@ -331,7 +332,12 @@ var qry = {
         createParser: function() {
             return odata.createParser();
         }
-    }
+    },
+    /**
+     * @type {closures}
+     * @memberOf module:most-query
+     */
+    closures: closures
 }
 
 
