@@ -10,7 +10,8 @@
  */
 var util = require('util'),
     expressions = require('./expressions'),
-    jsep = require('jsep'),
+    esprima = require('esprima'),
+    async = require('async'),
     _ = require('./underscore-extra');
 
 var ExpressionTypes = {
@@ -18,7 +19,15 @@ var ExpressionTypes = {
     BinaryExpression: 'BinaryExpression',
     MemberExpression: 'MemberExpression',
     MethodExpression: 'MethodExpression',
-    Literal: 'Literal'
+    Identifier: 'Identifier',
+    Literal: 'Literal',
+    Program: 'Program',
+    ExpressionStatement : 'ExpressionStatement',
+    UnaryExpression:'UnaryExpression',
+    FunctionExpression:'FunctionExpression',
+    BlockStatement:'BlockStatement',
+    ReturnStatement:'ReturnStatement',
+    CallExpression:'CallExpression'
 };
 
 var FunctionUtils = {
@@ -60,7 +69,15 @@ var FunctionUtils = {
  * @constructor
  */
 function ClosureParser() {
-     //
+    /**
+     * @type Array
+     */
+    this.namedParams = [];
+    /**
+     * @type {*}
+     */
+    this.parsers = { };
+
 }
 /**
  * Parses a javascript expression and returns the equivalent QueryExpression instance.
@@ -75,9 +92,23 @@ ClosureParser.prototype.parse = function(fn, callback) {
     }
     try {
         //convert the given function to javascript expression
-        var expr = jsep(FunctionUtils.closure(fn));
+        var expr = esprima.parse('void(' + fn.toString() + ')');
+        //get FunctionExpression
+        var fnExpr = expr.body[0].expression.argument;
+        if (_.isNullOrUndefined(fnExpr)) {
+            callback(new Error('Invalid closure statement. Closure expression cannot be found.'));
+            return;
+        }
+        //get named parameters
+        self.namedParams = fnExpr.params;
+        //validate expression e.g. return [EXPRESSION];
+        if (fnExpr.body.body[0].type!=ExpressionTypes.ReturnStatement) {
+            callback(new Error('Invalid closure syntax. A closure expression must return a value.'));
+            return;
+        }
+        var closureExpr =  fnExpr.body.body[0].argument;
         //parse this expression
-        this.parseCommon(expr, function(err, result) {
+        this.parseCommon(closureExpr, function(err, result) {
             //and finally return the equivalent query expression
             if (result) {
                 if (typeof result.exprOf === 'function') {
@@ -107,11 +138,14 @@ ClosureParser.prototype.parseCommon = function(expr, callback) {
     else if (expr.type === ExpressionTypes.MemberExpression) {
         this.parseMember(expr, callback);
     }
-    else if (expr.type === ExpressionTypes.MethodExpression) {
+    else if (expr.type === ExpressionTypes.CallExpression) {
         this.parseMethod(expr, callback);
     }
+    else if (expr.type === ExpressionTypes.Identifier) {
+        this.parseIdentifier(expr, callback);
+    }
     else {
-        callback(new Error('The given expression is not yet implemented.'));
+        callback(new Error('The given expression is not yet implemented (' + expr.type + ').'));
     }
 };
 
@@ -190,7 +224,33 @@ ClosureParser.prototype.parseBinary = function(expr, callback) {
                     }
                     else {
                         if (expressions.isArithmeticOperator(op)) {
-                            callback(null, expressions.createArithmeticExpression(left, op, right));
+                            //validate arithmetic arguments
+                            if (expressions.isLiteralExpression(left) && expressions.isLiteralExpression(right)) {
+                                //evaluate expression
+                                switch (op) {
+                                    case expressions.Operators.Add:
+                                        callback(null, left.value + right.value);
+                                        break;
+                                    case expressions.Operators.Sub:
+                                        callback(null, left.value - right.value);
+                                        break;
+                                    case expressions.Operators.Div:
+                                        callback(null, left.value / right.value);
+                                        break;
+                                    case expressions.Operators.Mul:
+                                        callback(null, left.value * right.value);
+                                        break;
+                                    case expressions.Operators.Mod:
+                                        callback(null, left.value % right.value);
+                                        break;
+                                    default:
+                                        callback(new Error('Invalid arithmetic operator'));
+                                }
+                            }
+                            else {
+                                callback(null, expressions.createArithmeticExpression(left, op, right));
+                            }
+
                         }
                         else if (expressions.isComparisonOperator(op)) {
                             callback(null, expressions.createComparisonExpression(left, op, right));
@@ -206,25 +266,207 @@ ClosureParser.prototype.parseBinary = function(expr, callback) {
 
 };
 
+function memberExpressionToString(expr) {
+    if (_.isNullOrUndefined(expr.object.object)) {
+        return expr.object.name + '.' + expr.property.name
+    }
+    else {
+        return memberExpressionToString(expr.object) + '.' + expr.property.name;
+    }
+}
+
+function parentMemberExpressionToString(expr) {
+    if (_.isNullOrUndefined(expr.object.object)) {
+        return expr.object.name;
+    }
+    else {
+        return memberExpressionToString(expr.object);
+    }
+}
+
 ClosureParser.prototype.parseMember = function(expr, callback) {
-    var self = this;
-    if (expr.property) {
-        if (expr.property.name) {
-            self.resolveMember(expr.property.name, function(err, member) {
-                if (err) {
-                    callback(err);
+    try {
+        var self = this;
+        if (expr.property) {
+            var namedParam = self.namedParams[0];
+            if (_.isNullOrUndefined(namedParam)) {
+                callback('Invalid or missing closure parameter');
+                return;
+            }
+            if (expr.object.name===namedParam.name) {
+                self.resolveMember(expr.property.name, function(err, member) {
+                    if (err) {
+                        callback(err);
+                        return;
+                    }
+                    callback(null, expressions.createMemberExpression(member));
+                });
+            }
+            else {
+                if (_.isNullOrUndefined(expr.object.object)) {
+                    callback(new Error('Invalid or unsupported member expression.'));
                     return;
                 }
-                callback(null, expressions.createMemberExpression(member));
-            });
-            return;
+                if (expr.object.object.name===namedParam.name) {
+                    //get closure parameter expression e.g. x.title.length
+                    var property = expr.property.name;
+                    self.parseMember(expr.object, function(err, result) {
+                        if (err) { callback(err); return; }
+                        callback(null, expressions.createMethodCallExpression(property, [result]));
+                    });
+                }
+                else {
+                    //evaluate object member value e.g. item.title or item.status.id
+                    var value = self.eval(memberExpressionToString(expr));
+                    callback(null, expressions.createLiteralExpression(value));
+                }
+
+            }
         }
+        else
+            callback(new Error('Invalid member expression.'));
     }
-    callback(new Error('Invalid member expression.'));
+    catch(e) {
+        callback(e);
+    }
+};
+/**
+ * @private
+ * @param {*} expr
+ * @param {function(Error=,*=)} callback
+ */
+ClosureParser.prototype.parseMethodCall = function(expr, callback) {
+    var self = this;
+    if (_.isNullOrUndefined(expr.callee.object)) {
+        callback(new Error('Invalid or unsupported method expression.'));
+        return;
+    }
+    var method = expr.callee.property.name;
+    self.parseMember(expr.callee.object, function(err, result) {
+        if (err) { callback(err); return; }
+        var args = [result];
+        async.eachSeries(expr.arguments, function(arg, cb) {
+            self.parseCommon(arg, function(err, result) {
+                if (err) { cb(err); return; }
+                args.push(result)
+            });
+        }, function(err) {
+            if (err) {
+                callback(err);
+                return;
+            }
+            try {
+                if (typeof self.parsers[method] === 'function') {
+                    self.parsers[method](method, args, callback);
+                }
+                else {
+                    switch (method) {
+                        case 'getDate': method='day';break;
+                        case 'getMonth': method='month';break;
+                        case 'getYear':
+                        case 'getFullYear':
+                            method='date';break;
+                        case 'getMinutes': method='minute';break;
+                        case 'getSeconds': method='second';break;
+                        case 'getHours': method='hour';break;
+                        case 'startsWith': method='startswith';break;
+                        case 'endsWith': method='endswith';break;
+                        case 'contains': method='contains';break;
+                        case 'trim': method='trim';break;
+                        case 'toUpperCase': method='toupper';break;
+                        case 'toLowerCase': method='tolower';break;
+                        case 'floor': method='floor';break;
+                        case 'ceiling': method='ceiling';break;
+                        case 'indexOf': method='indexof';break;
+                        default:
+                            callback(new Error('The specified method ('+ method +') is unsupported or is not yet implemented.'));
+                            return;
+                    }
+                    callback(null, expressions.createMethodCallExpression(method, args));
+                }
+
+            }
+            catch(e) {
+                callback(e);
+            }
+
+        })
+
+    });
+
 };
 
 ClosureParser.prototype.parseMethod = function(expr, callback) {
-    callback();
+
+    var self = this;
+    try {
+        //get method name
+        var name = expr.callee.name, args = [], needsEvaluation = true, thisName;
+        if (_.isNullOrUndefined(name)) {
+            if (!_.isNullOrUndefined(expr.callee.object)) {
+                if (!_.isNullOrUndefined(expr.callee.object.object)) {
+                    if (expr.callee.object.object.name===self.namedParams[0].name) {
+                        self.parseMethodCall(expr, callback);
+                        return;
+                    }
+                }
+            }
+            name = memberExpressionToString(expr.callee);
+            thisName = parentMemberExpressionToString(expr.callee);
+        }
+        //get arguments
+        async.eachSeries(expr.arguments, function(arg, cb) {
+            self.parseCommon(arg, function(err, result) {
+                if (err) {
+                    cb(err);
+                }
+                else {
+                    args.push(result);
+                    if (!expressions.isLiteralExpression(result))
+                        needsEvaluation = false;
+                    cb();
+                }
+            });
+        }, function(err) {
+            try {
+                if (err) { callback(err); return; }
+                if (needsEvaluation) {
+                    var fn = self.eval(name), thisArg;
+                    if (thisName)
+                        thisArg = self.eval(thisName);
+                    callback(null, expressions.createLiteralExpression(fn.apply(thisArg, args.map(function(x) { return x.value; }))));
+                }
+                else {
+                    callback(null, expressions.createMethodCallExpression(name, args));
+                }
+            }
+            catch(e) {
+                callback(e);
+            }
+        });
+    }
+    catch(e) {
+        callback(e);
+    }
+};
+
+/**
+ * @param {*} str
+ * @returns {*}
+ */
+ClosureParser.prototype.eval = function(str) {
+    return eval(str);
+};
+
+ClosureParser.prototype.parseIdentifier = function(expr, callback) {
+    try {
+        var value = this.eval(expr.name);
+        callback(null, expressions.createLiteralExpression(value));
+    }
+    catch (e) {
+        callback(e);
+    }
+
 };
 
 ClosureParser.prototype.parseLiteral = function(expr, callback) {
