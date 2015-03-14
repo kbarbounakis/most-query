@@ -29,41 +29,6 @@ var ExpressionTypes = {
     ReturnStatement:'ReturnStatement',
     CallExpression:'CallExpression'
 };
-
-var FunctionUtils = {
-    STRIP_COMMENTS: /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg,
-    STRIP_SOURCE_COMMENTS: /(?:\/\*(?:[\s\S]*?)\*\/)|(?:([\s;])+\/\/(?:.*)$)/gm,
-    SOURCE_COMPRESS:/\/\*.+?\*\/|\/\/.*(?=[\n\r])/g,
-    SOURCE_TRIM:/(^\s*|\s*$)/g,
-    ARGUMENT_NAMES: /([^\s,]+)/g,
-    /**
-     * @param func
-     * @returns {Array|*}
-     */
-    parameters: function (func) {
-        var fnStr = func.toString().replace(this.STRIP_COMMENTS, '');
-        var result = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(this.ARGUMENT_NAMES);
-        if (result === null)
-            result = [];
-        return result;
-    },
-    /**
-     * @param {function} func
-     * @returns {string}
-     */
-    body: function (func) {
-        var s = func.toString().replace(this.STRIP_SOURCE_COMMENTS, '$1').replace(this.SOURCE_COMPRESS, '').replace(/\s{2,}/g, ' ');
-        return s.substring(s.indexOf('{') + 1, s.lastIndexOf('}')).replace(this.SOURCE_TRIM, '');
-    },
-    /**
-     * @param {function} func
-     * @returns {string}
-     */
-    closure: function (func) {
-        return this.body(func).replace(/^return/g,'').replace(/;$/g,'');
-    }
-};
-
 /**
  * @class ClosureParser
  * @constructor
@@ -84,7 +49,7 @@ function ClosureParser() {
  * @param {function(*)} fn The closure expression to parse
  * @param {function(Error=,*=)} callback
  */
-ClosureParser.prototype.parse = function(fn, callback) {
+ClosureParser.prototype.parseFilter = function(fn, callback) {
     var self = this;
     if (typeof fn === 'undefined' || fn == null ) {
         callback();
@@ -348,7 +313,8 @@ ClosureParser.prototype.parseMethodCall = function(expr, callback) {
         async.eachSeries(expr.arguments, function(arg, cb) {
             self.parseCommon(arg, function(err, result) {
                 if (err) { cb(err); return; }
-                args.push(result)
+                args.push(result);
+                cb();
             });
         }, function(err) {
             if (err) {
@@ -371,13 +337,15 @@ ClosureParser.prototype.parseMethodCall = function(expr, callback) {
                         case 'getHours': method='hour';break;
                         case 'startsWith': method='startswith';break;
                         case 'endsWith': method='endswith';break;
-                        case 'contains': method='contains';break;
                         case 'trim': method='trim';break;
                         case 'toUpperCase': method='toupper';break;
                         case 'toLowerCase': method='tolower';break;
                         case 'floor': method='floor';break;
                         case 'ceiling': method='ceiling';break;
                         case 'indexOf': method='indexof';break;
+                        case 'substring':
+                        case 'substr':
+                            method='substring';break;
                         default:
                             callback(new Error('The specified method ('+ method +') is unsupported or is not yet implemented.'));
                             return;
