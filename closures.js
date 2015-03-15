@@ -268,8 +268,11 @@ ClosureParser.prototype.parseMember = function(expr, callback) {
                 });
             }
             else {
+                var value;
                 if (_.isNullOrUndefined(expr.object.object)) {
-                    callback(new Error('Invalid or unsupported member expression.'));
+                    //evaluate object member value e.g. item.title or item.status.id
+                    value = self.eval(memberExpressionToString(expr));
+                    callback(null, expressions.createLiteralExpression(value));
                     return;
                 }
                 if (expr.object.object.name===namedParam.name) {
@@ -282,7 +285,7 @@ ClosureParser.prototype.parseMember = function(expr, callback) {
                 }
                 else {
                     //evaluate object member value e.g. item.title or item.status.id
-                    var value = self.eval(memberExpressionToString(expr));
+                    value = self.eval(memberExpressionToString(expr));
                     callback(null, expressions.createLiteralExpression(value));
                 }
 
@@ -423,7 +426,7 @@ ClosureParser.prototype.parseMethod = function(expr, callback) {
  * @returns {*}
  */
 ClosureParser.prototype.eval = function(str) {
-    return eval(str);
+    return eval.call(undefined,str);
 };
 
 ClosureParser.prototype.parseIdentifier = function(expr, callback) {
@@ -475,16 +478,18 @@ var closures = {
      * @param {function(*)} fn The closure expression to parse
      * @param {function(Error=,*=)} callback A callback function which is going to return the equivalent QueryExpression
      */
-    parse: function(fn, callback) {
+    parseFilter: function(fn, callback) {
         var p = new ClosureParser();
-        return p.parse(fn, callback);
+        return p.parseFilter(fn, callback);
     },
     /**
-     * Creates a new instance of OData parser
+     * Creates a new instance of closure parser
      * @returns {ClosureParser}
      */
     createParser: function() {
-        return new ClosureParser();
+        var parser = new ClosureParser();
+        parser.eval = function(o) { return eval(o); };
+        return parser;
     }
 }
 
