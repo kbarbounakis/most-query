@@ -81,7 +81,12 @@ function SqlFormatter() {
          * Gets or sets a format that is going to be applied in field expression e.g. AS [$1] or AS '$1'.
          * @type {string}
          */
-        nameFormat : '$1'
+        nameFormat : '$1',
+        /**
+         * Gets or sets a boolean that indicates whether field aliases will always be used for select statements.
+         * @type {boolean}
+         */
+        forceAlias: false
     }
 }
 /**
@@ -898,14 +903,17 @@ SqlFormatter.prototype.formatFieldEx = function(obj, s)
     if (obj==null)
         return null;
     if (!(obj instanceof QueryField))
-        throw new Error('Invalid argument. An instance of QueryField class is expected.')
+        throw new Error('Invalid argument. An instance of QueryField class is expected.');
     //get property
     var prop = Object.key(obj);
     if (prop==null)
         return null;
     var useAlias = (s=='%f');
     if (prop=='$name') {
-        return this.escapeName(obj.$name);
+        if (this.settings.forceAlias)
+            return this.escapeName(obj.$name).concat(' AS ', obj.name());
+        else
+            return this.escapeName(obj.$name);
     }
     else {
         var expr = obj[prop];
