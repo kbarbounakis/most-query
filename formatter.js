@@ -122,7 +122,7 @@ SqlFormatter.prototype.formatComparison = function(comparison)
                     case '$lt': arr.push('(%s'.concat('<',escapedValue,')'));break;
                     case '$lte': arr.push('(%s'.concat('<=',escapedValue,')'));break;
                     case '$gt': arr.push('(%s'.concat('>',escapedValue,')'));break;
-                    case '$gte': arr.push('(%s'.concat('>',escapedValue,')'));break;
+                    case '$gte': arr.push('(%s'.concat('>=',escapedValue,')'));break;
                     case '$ne': arr.push('(NOT %s'.concat('=',escapedValue,')'));break;
                     case '$in': arr.push('(%s'.concat('(',escapedValue,'))'));break;
                     case '$nin':arr.push('(NOT %s'.concat('(',escapedValue,'))'));break;
