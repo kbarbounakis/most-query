@@ -83,7 +83,8 @@ function SqlFormatter() {
          */
         nameFormat : '$1',
         /**
-         * Gets or sets a boolean that indicates whether field aliases will always be used for select statements.
+         * Gets or sets a boolean that indicates whether field aliases will forcibly be used even if field expression does not have any alias
+         * (e.g. SELECT Person.name as name or SELECT Person.name).
          * @type {boolean}
          */
         forceAlias: false
@@ -909,11 +910,8 @@ SqlFormatter.prototype.formatFieldEx = function(obj, s)
     if (prop==null)
         return null;
     var useAlias = (s=='%f');
-    if (prop=='$name') {
-        if (this.settings.forceAlias)
-            return this.escapeName(obj.$name).concat(' AS ', obj.name());
-        else
-            return this.escapeName(obj.$name);
+    if (prop==='$name') {
+        return (this.settings.forceAlias && useAlias) ? this.escapeName(obj.$name).concat(' AS ', obj.name()) : this.escapeName(obj.$name);
     }
     else {
         var expr = obj[prop];
