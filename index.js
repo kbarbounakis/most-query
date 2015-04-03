@@ -15,6 +15,7 @@ var util = require('util'),
     odata = require('./odata'),
     frmt = require('./formatter'),
     closures = require('./closures'),
+    sqlutils = require('./sql-utils'),
     /**
      * @class SqlFormatter
      * @constructor
@@ -67,6 +68,14 @@ var qry = {
          * @constructs OpenDataQuery
          */
         OpenDataQuery:OpenDataQuery
+    },
+    /**
+     * Escapes the given value to an equivalent string which is going to used in SQL expressions
+     * @param {*} val
+     * @returns {string}
+     */
+    escape: function(val) {
+        return sqlutils.escape(val);
     },
     /**
      * @returns {QueryExpression}
@@ -131,7 +140,7 @@ var qry = {
         return q.update(entity);
     },
     /**
-     * Formats a query object and returns the equivalent SQL statement
+     * Formats the given value and returns an equivalent string which is going to be used in SQL expressions.
      * @param {QueryExpression|*} query
      * @param {string=} s
      * @returns {string}
@@ -142,16 +151,17 @@ var qry = {
         return formatter.format(query, s);
     },
     /**
+     * Formats the given SQL expression string and replaces parameters with the given parameters, if any.
+     * e.g. * SELECT * FROM User where username=? with values: ['user1'] etc.
      * @param {string} query
-     * @param {*} values
+     * @param {*=} values
      * @returns {string}
      * @memberOf module:most-query
      */
     prepare: function(query, values) {
         if (typeof values === 'undefined' || values===null)
             return query;
-        var mysql=require('mysql');
-        return mysql.format(query,values);
+        return sqlutils.format(query,values);
     },
     /**
      * Creates an entity reference that is going to be used in query expressions.

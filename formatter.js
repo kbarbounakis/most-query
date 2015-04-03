@@ -8,7 +8,7 @@
  * Released under the BSD3-Clause license
  * Date: 2014-07-16
  */
-var mysql = require('mysql'),
+var sqlutils = require('./sql-utils'),
     util = require('util'),
     array = require('most-array'),
     query = require('./query'),
@@ -63,6 +63,9 @@ if (typeof Object.key !== 'function') {
         return null;
     }
 }
+
+
+
 
 /**
  * Initializes an SQL formatter class.
@@ -144,6 +147,8 @@ SqlFormatter.prototype.formatComparison = function(comparison)
         return '(%s'.concat(util.format('=%s)',this.escape(comparison)));
     }
 };
+
+
 /**
  * Escapes an object or a value and returns the equivalent sql value.
  * @param {*} value - A value that is going to be escaped for SQL statements
@@ -153,20 +158,20 @@ SqlFormatter.prototype.formatComparison = function(comparison)
 SqlFormatter.prototype.escape = function(value,unquoted)
 {
     if (value==null || typeof value==='undefined')
-        return mysql.escape(null);
+        return sqlutils.escape(null);
 
     if (typeof value === 'object')
     {
         //add an exception for Date object
         if (value instanceof Date)
-            return mysql.escape(value);
+            return sqlutils.escape(value);
         if (value.hasOwnProperty('$name'))
             return this.escapeName(value.$name);
     }
     if (unquoted)
         return value.valueOf();
     else
-        return mysql.escape(value);
+        return sqlutils.escape(value);
 }
 
 /**

@@ -29,7 +29,6 @@
     "underscore": "~1.8.2",
     "esprima": "~2.1.0",
     "most-array": "~1.0.1",
-    "mysql": "2.1.0",
     "q": "^1.2.0"
   },
   "main": "index",
