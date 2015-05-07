@@ -73,7 +73,7 @@ function objectToValues(object, timeZone) {
             if(typeof value === 'function') {
                 continue;
             }
-            values.push(this.escapeId(key) + ' = ' + escape(value, true, timeZone));
+            values.push(escapeId(key) + ' = ' + escape(value, true, timeZone));
         }
     }
     return values.join(', ');
