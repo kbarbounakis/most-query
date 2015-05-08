@@ -636,7 +636,7 @@ SqlFormatter.prototype.formatSelect = function(obj)
                 sql = sql.concat(util.format(' INNER JOIN (%s)', $this.format(x.$entity)));
                 //add alias
                 if (x.$entity.$alias)
-                    sql = sql.concat(' AS ').concat(x.$entity.$alias);
+                    sql = sql.concat(' AS ').concat($this.escapeName(x.$entity.$alias));
             }
             else {
                 //get join table name
@@ -646,7 +646,7 @@ SqlFormatter.prototype.formatSelect = function(obj)
                 sql = sql.concat(' '+ joinType + ' JOIN ').concat($this.escapeName(table));
                 //add alias
                 if (x.$entity.$as)
-                    sql = sql.concat(' AS ').concat(x.$entity.$as);
+                    sql = sql.concat(' AS ').concat($this.escapeName(x.$entity.$as));
             }
             if (util.isArray(x.$with))
             {
