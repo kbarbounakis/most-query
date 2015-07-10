@@ -575,21 +575,30 @@ QueryExpression.prototype.select = function(props)
 };
 /**
  * Sets the entity of a select query expression
- * @param entity {string|*} A string that represents the entity name
+ * @param entity {string|QueryEntity|*} A string that represents the entity name
  * @returns {QueryExpression}
  */
 QueryExpression.prototype.from = function(entity) {
 
     if (entity==null)
         return this;
+    var name;
+    if (entity instanceof QueryEntity) {
+        name  = entity.$as || entity.name;
+        this.$ref = this.$ref || {};
+        this.$ref[name] = entity;
+    }
+    else {
+        name = entity.valueOf();
+    }
     if (this.privates.__fields) {
         //initialize $select property
         this.$select = {};
         //and set array of fields
-        this.$select[entity.valueOf()] = this.privates.__fields;
+        this.$select[name] = this.privates.__fields;
     }
     else {
-        this.privates.__entity = entity.valueOf();
+        this.privates.__entity = name;
     }
     //delete other properties (if any)
     delete this.$delete;

@@ -594,8 +594,7 @@ SqlFormatter.prototype.$bit = function(p0, p1)
  */
 SqlFormatter.prototype.formatSelect = function(obj)
 {
-    var $this = this;
-    var sql = '';
+    var $this = this, sql = '', escapedEntity;
     if (!Object.isObject(obj.$select))
         throw new Error('Select expression cannot be empty at this context.');
     //get entity name
@@ -613,16 +612,27 @@ SqlFormatter.prototype.formatSelect = function(obj)
     //if fields is not an array
     if (!util.isArray(fields))
         throw new Error('Select expression does not contain any fields or the collection of fields is of the wrong type.');
+
+    //validate entity reference (if any)
+    if (obj.$ref && obj.$ref[entity]) {
+        var entityRef = obj.$ref[entity];
+        //escape entity ref
+        escapedEntity = entityRef.$as ?  $this.escapeName(entityRef.name) + ' AS ' + $this.escapeName(entityRef.$as) : $this.escapeName(entityRef.name);
+    }
+    else {
+        //escape entity name
+        escapedEntity = $this.escapeName(entity)
+    }
     //add basic SELECT statement
     if (obj.$fixed) {
         sql = sql.concat('SELECT * FROM (SELECT ', array(fields).select(function(x) {
             return $this.format(x,'%f');
-        }).toArray().join(', '), ') ', $this.escapeName(entity));
+        }).toArray().join(', '), ') ', escapedEntity);
     }
     else {
         sql = sql.concat(obj.$distinct ? 'SELECT DISTINCT ' : 'SELECT ', array(fields).select(function(x) {
             return $this.format(x,'%f');
-        }).toArray().join(', '), ' FROM ', $this.escapeName(entity));
+        }).toArray().join(', '), ' FROM ', escapedEntity);
     }
 
 
