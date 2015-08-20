@@ -926,7 +926,7 @@ SqlFormatter.prototype.formatFieldEx = function(obj, s)
         return null;
     var useAlias = (s=='%f');
     if (prop==='$name') {
-        return (this.settings.forceAlias && useAlias) ? this.escapeName(obj.$name).concat(' AS ', obj.name()) : this.escapeName(obj.$name);
+        return (this.settings.forceAlias && useAlias) ? this.escapeName(obj.$name).concat(' AS ', this.escapeName(obj.name())) : this.escapeName(obj.$name);
     }
     else {
         var expr = obj[prop];
