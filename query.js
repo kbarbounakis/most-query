@@ -220,6 +220,17 @@ function QueryExpression()
     this.privates = function() { };
 
 }
+/**
+ * @private
+ * @param {string=} s
+ * @returns {string|*}
+ */
+QueryExpression.prototype.prop = function(s)
+{
+    if (typeof s === 'undefined') { return this.privates.__prop; }
+    if (s == null) { delete this.privates.__prop; return; }
+    this.privates.__prop = s;
+};
 
 /**
  * Clones the current expression and returns a new QueryExpression object.
@@ -976,9 +987,21 @@ QueryExpression.prototype.endsWith = function(value)
  */
 QueryExpression.prototype.contains = function(value)
 {
-    if (this.privates.__prop) {
+    var p0 = this.prop();
+    if (p0) {
         var expr = {};
-        expr[this.privates.__prop] = { $contains : [ value, true] };
+        expr[p0] = { $text: value };
+        this.__append(expr);
+    }
+    return this;
+};
+
+QueryExpression.prototype.notContains = function(value)
+{
+    var p0 = this.prop();
+    if (p0) {
+        var expr = { $not: { } };
+        expr.$not[p0] = { $text: value };
         this.__append(expr);
     }
     return this;
@@ -1031,6 +1054,25 @@ QueryExpression.prototype.greaterOrEqual = function(value)
     }
     return this;
 };
+
+/**
+ * @param {*} value1
+ * @param {*} value2
+ * @returns {QueryExpression}
+ */
+QueryExpression.prototype.between = function(value1, value2)
+{
+    var p0 = this.prop();
+    if (p0) {
+        var expr = {};
+        var comp1 = {}; comp1[p0] =  { $gte:value1 };
+        var comp2 = {}; comp2[p0] =  { $lte:value2 };
+        expr['$and'] = [ comp1, comp2 ];
+        this.__append(expr);
+    }
+    return this;
+};
+
 /**
  * Skips the specified number of objects during select.
  * @param {Number} n

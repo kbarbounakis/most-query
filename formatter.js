@@ -200,6 +200,9 @@ SqlFormatter.prototype.formatWhere = function(where)
     //get property value
     var propertyValue = where[property];
     switch (property) {
+        case '$not':
+            return '(NOT ' + self.formatWhere(propertyValue) + ')';
+            break;
         case '$and':
         case '$or':
             var separator = property=='$or' ? ' OR ' : ' AND ';
@@ -231,6 +234,8 @@ SqlFormatter.prototype.formatWhere = function(where)
             //escape property name
             var escapedProperty = this.escapeName(property);
             switch (op) {
+                case '$text':
+                    return self.$text({ $name:property}, comparison.$text);
                 case '$eq':
                     if (typeof comparison.$eq === 'undefined' || comparison.$eq==null)
                         return util.format('(%s IS NULL)', escapedProperty);
@@ -445,6 +450,17 @@ SqlFormatter.prototype.$toupper = function(p0)
  * @returns {string}
  */
 SqlFormatter.prototype.$contains = function(p0, p1)
+{
+    return this.$text(p0, p1);
+};
+
+/**
+ * Implements contains(a,b) expression formatter.
+ * @param {string|*} p0
+ * @param {string|*} p1
+ * @returns {string}
+ */
+SqlFormatter.prototype.$text = function(p0, p1)
 {
     //validate params
     if (Object.isNullOrUndefined(p0) || Object.isNullOrUndefined(p1))
@@ -904,7 +920,7 @@ SqlFormatter.prototype.formatDelete = function(obj)
 
 SqlFormatter.prototype.escapeName = function(name) {
     if (typeof name === 'string')
-        return name.replace(/(\w+)$|^(\w+)$/, this.settings.nameFormat);
+        return name.replace(/(\w+)$|^(\w+)$/g, this.settings.nameFormat);
     return name;
 }
 
