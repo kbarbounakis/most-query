@@ -17,8 +17,7 @@ var util = require('util'),
     closures = require('./closures'),
     sqlutils = require('./sql-utils'),
     /**
-     * @class SqlFormatter
-     * @constructor
+     * @constructs SqlFormatter
      */
     SqlFormatter = frmt.SqlFormatter,
     query = require('./query'),
@@ -45,7 +44,6 @@ var util = require('util'),
 var qry = {
     /**
      * @namespace
-     * @memberOf module:most-query
      */
     classes: {
         /**
@@ -80,7 +78,6 @@ var qry = {
     /**
      * @returns {QueryExpression}
      * @param {string=} entity - The entity that is going to be used in this operation
-     * @memberOf module:most-query
      */
     query: function(entity) {
 
@@ -92,7 +89,6 @@ var qry = {
      * Initializes a QueryExpression instance.
      * @returns {QueryExpression}
      * @param  {String|*} obj
-     * @memberOf module:most-query
      */
     where: function(obj) {
         var q = new QueryExpression();
@@ -102,7 +98,6 @@ var qry = {
      * Initializes a select query expression from the specified entity
      * @returns {QueryExpression}
      * @param entity {string} - The entity that is going to be used in this operation
-     * @memberOf module:most-query
      */
     selectFrom: function(entity) {
 
@@ -114,7 +109,6 @@ var qry = {
      * Initializes a delete query expression from the specified entity
      * @param entity {string}
      * @returns {QueryExpression}
-     * @memberOf module:most-query
      */
     deleteFrom: function(entity) {
         var q = new QueryExpression();
@@ -123,8 +117,7 @@ var qry = {
     },
     /**
      * @param {*} obj
-     * @returns {QueryExpression}
-     * @memberOf module:most-query
+     * @returns {QueryExpression|*}
      */
     insert: function(obj) {
         var q = new QueryExpression();
@@ -132,7 +125,7 @@ var qry = {
     },
     /**
      * @param {string} entity
-     * @returns {QueryExpression}
+     * @returns {QueryExpression|*}
      * @memberOf module:most-query
      */
     update: function(entity) {
@@ -191,7 +184,6 @@ var qry = {
      * Creates a field reference that is going to be used in query expressions (like join statements etc).
      * @param {string} entity - The entity name
      * @param {string} name - The field name
-     * @memberOf module:most-query
      */
     createField: function(entity, name) {
         var f = {};
@@ -208,7 +200,6 @@ var qry = {
     },
     /**
      * @namespace
-     * @memberOf module:most-query
      */
     fields: {
         /**
@@ -324,7 +315,6 @@ var qry = {
     },
     /**
      * @namespace
-     * @memberOf module:most-query
      */
     openData: {
         /**
@@ -345,7 +335,6 @@ var qry = {
     },
     /**
      * @type {closures}
-     * @memberOf module:most-query
      */
     closures: closures
 }

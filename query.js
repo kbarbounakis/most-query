@@ -14,131 +14,9 @@
 /**
  * @ignore
  */
-var util = require('util'), _=require('./underscore-extra');
-
-if (!Object.keys) {
-    Object.keys = (function () {
-        var hasOwnProperty = Object.prototype.hasOwnProperty,
-            hasDontEnumBug = !({toString: null}).propertyIsEnumerable('toString'),
-            dontEnums = [
-                'toString',
-                'toLocaleString',
-                'valueOf',
-                'hasOwnProperty',
-                'isPrototypeOf',
-                'propertyIsEnumerable',
-                'constructor'
-            ],
-            dontEnumsLength = dontEnums.length;
-        return function (obj) {
-            if (typeof obj !== 'object' && (typeof obj !== 'function' || obj === null)) {
-                throw new TypeError('Object.keys called on non-object');
-            }
-            var result = [], prop, i;
-            for (prop in obj) {
-                if (hasOwnProperty.call(obj, prop)) {
-                    result.push(prop);
-                }
-            }
-            if (hasDontEnumBug) {
-                for (i = 0; i < dontEnumsLength; i++) {
-                    if (hasOwnProperty.call(obj, dontEnums[i])) {
-                        result.push(dontEnums[i]);
-                    }
-                }
-            }
-            return result;
-        };
-    }());
-}
-
-// Production steps of ECMA-262, Edition 5, 15.4.4.18
-// Reference: http://es5.github.com/#x15.4.4.18
-if (typeof Array.prototype.forEach === 'undefined') {
-    /**
-     * @param {function(*)} callback
-     * @param {*=} thisArg
-     * @name Array.forEach
-     */
-    var forEach = function (callback, thisArg) {
-        var T, k;
-        if (this == null) {
-            throw new TypeError(" this is null or not defined");
-        }
-        var O = Object(this);
-        var len = O.length >>> 0;
-        if (typeof callback !== "function") {
-            throw new TypeError(callback + " is not a function");
-        }
-        if (arguments.length > 1) {
-            T = thisArg;
-        }
-        k = 0;
-        while (k < len) {
-            var kValue;
-            if (k in O) {
-                kValue = O[k];
-                callback.call(T, kValue, k, O);
-            }
-            k++;
-        }
-    };
-
-    if (Object.defineProperty) {
-        try {
-            Object.defineProperty(Array.prototype, 'forEach', {
-                value: forEach, configurable: true, enumerable: false, writable: true
-            });
-        } catch(e) {}
-    }
-
-    if (!Array.prototype.forEach) { Array.prototype.forEach = forEach; }
-
-}
-
-if (typeof Object.isNullOrUndefined !== 'function') {
-    /**
-     * Gets a boolean that indicates whether the given object is null or undefined
-     * @param {*} obj
-     * @returns {boolean}
-     */
-    Object.isNullOrUndefined = function(obj) {
-        return (typeof obj === 'undefined') || (obj==null);
-    }
-}
-
-if (typeof Object.key !== 'function') {
-    /**
-     * Gets a string that represents the name of the very first property of an object. This operation may be used in anonymous object types.
-     * @param obj {*}
-     * @returns {string}
-     */
-    Object.key = function(obj) {
-        if (typeof obj === 'undefined' || obj == null)
-            return null;
-        for(var prop in obj) {
-            if (obj.hasOwnProperty(prop))
-                return prop;
-        }
-        return null;
-    }
-}
-
-if (typeof Object.clear !== 'function') {
-    /**
-     * Clears object properties
-     * @param {*} obj
-     */
-    Object.clear = function(obj) {
-        if (typeof obj === 'undefined' || obj == null)
-            return;
-        var arr = [];
-        for(var key in obj)
-            if (obj.hasOwnProperty(key)) arr.push(key);
-        for(var key in arr)
-            delete obj[key];
-    }
-}
+var util = require('util'),
+    _=require('./underscore-extra'),
+    natives = require('./natives');
 
 /**
  * @class QueryExpression
@@ -222,13 +100,13 @@ function QueryExpression()
 }
 /**
  * @private
- * @param {string=} s
+ * @param {string|*=} s
  * @returns {string|*}
  */
 QueryExpression.prototype.prop = function(s)
 {
     if (typeof s === 'undefined') { return this.privates.__prop; }
-    if (s == null) { delete this.privates.__prop; return; }
+    if (s == null) { delete this.privates.__prop; }
     this.privates.__prop = s;
 };
 
@@ -428,14 +306,17 @@ QueryExpression.prototype.distinct = function(value)
  */
 QueryExpression.prototype.where = function(name)
 {
-    if (name===undefined)
-        return this;
-    this.$where = null;
-    if (name instanceof QueryField) {
-        this.privates.__prop = name.nameOf();
+    if (_.isNullOrUndefined(name))
+        throw new Error('Left operand cannot be empty. Expected string or object.');
+    delete this.$where;
+    if (typeof name === 'string') {
+        this.prop(name);
+    }
+    else if (typeof name === 'object') {
+        this.prop(QueryField.prototype.nameOf.call(name))
     }
     else {
-        this.privates.__prop = name.valueOf();
+        throw new Error('Invalid left operand. Expected string or object.');
     }
     return this;
 };
@@ -813,30 +694,36 @@ QueryExpression.prototype.__append = function(expr) {
  */
 QueryExpression.prototype.or = function(name)
 {
-    if (name===undefined)
-        return this;
-    if (name instanceof QueryField) {
-        this.privates.__prop = name.nameOf();
+    if (_.isNullOrUndefined(name))
+        throw new Error('Left operand cannot be empty. Expected string or object.');
+    if (typeof name === 'string') {
+        this.prop(name);
+    }
+    else if (typeof name === 'object') {
+        this.prop(QueryField.prototype.nameOf.call(name))
     }
     else {
-        this.privates.__prop = name.valueOf();
+        throw new Error('Invalid left operand. Expected string or object.');
     }
     this.privates.__expr = '$or';
     return this;
 };
 /**
- * @param name {string|QueryField}
+ * @param name {string|QueryField|*}
  * @returns {QueryExpression}
  */
 QueryExpression.prototype.and = function(name)
 {
-    if (name===undefined)
-        return this;
-    if (name instanceof QueryField) {
-        this.privates.__prop = name.nameOf();
+    if (_.isNullOrUndefined(name))
+        throw new Error('Left operand cannot be empty. Expected string or object.');
+    if (typeof name === 'string') {
+        this.prop(name);
+    }
+    else if (typeof name === 'object') {
+        this.prop(QueryField.prototype.nameOf.call(name))
     }
     else {
-        this.privates.__prop = name.valueOf();
+        throw new Error('Invalid left operand. Expected string or object.');
     }
     this.privates.__expr = '$and';
     return this;
@@ -850,9 +737,9 @@ QueryExpression.prototype.and = function(name)
  */
 QueryExpression.prototype.equal = function(value)
 {
-    if (this.privates.__prop) {
-        var expr = {};
-        expr[this.privates.__prop] = value;
+    var p0 = this.prop();
+    if (p0) {
+        var expr = QueryFieldAggregator.prototype.compareWith.call(p0, { $eq:value });
         this.__append(expr);
     }
     return this;
@@ -874,9 +761,9 @@ QueryExpression.prototype.eq = QueryExpression.prototype.equal;
  */
 QueryExpression.prototype.notEqual = function(value)
 {
-    if (this.privates.__prop) {
-        var expr = {};
-        expr[this.privates.__prop] = { $ne : value };
+    var p0 = this.prop();
+    if (p0) {
+        var expr = QueryFieldAggregator.prototype.compareWith.call(p0, { $ne:value });
         this.__append(expr);
     }
     return this;
@@ -891,9 +778,25 @@ QueryExpression.prototype.notEqual = function(value)
  */
 QueryExpression.prototype.in = function(values)
 {
-    if (this.privates.__prop) {
-        var expr = {};
-        expr[this.privates.__prop] = { $in : values };
+    var p0 = this.prop();
+    if (p0) {
+        var expr = QueryFieldAggregator.prototype.compareWith.call(p0, { $in : values });
+        this.__append(expr);
+    }
+    return this;
+};
+/**
+ * Prepares a not in statement expression
+ * @example
+ * q.where('id').notIn([10, 11, 12]) //id in (10,11,12) expression
+ * @param {Array} values - An array of values that represents the right part of the prepared expression
+ * @returns {QueryExpression}
+ */
+QueryExpression.prototype.notIn = function(values)
+{
+    var p0 = this.prop();
+    if (p0) {
+        var expr = QueryFieldAggregator.prototype.compareWith.call(p0, { $nin : values });
         this.__append(expr);
     }
     return this;
@@ -905,9 +808,9 @@ QueryExpression.prototype.in = function(values)
  */
 QueryExpression.prototype.mod = function(value, result)
 {
-    if (this.privates.__prop) {
-        var expr = {};
-        expr[this.privates.__prop] = { $mod : [ value, result] };
+    var p0 = this.prop();
+    if (p0) {
+        var expr = QueryFieldAggregator.prototype.compareWith.call(p0, { $mod : [ value, result] });
         this.__append(expr);
     }
     return this;
@@ -920,11 +823,9 @@ QueryExpression.prototype.mod = function(value, result)
  */
 QueryExpression.prototype.bit = function(value, result)
 {
-    if (this.privates.__prop) {
-        var expr = {};
-        if (typeof result === 'undefined' || result == null)
-            result = value;
-        expr[this.privates.__prop] = { $bit : [ value, result] };
+    var p0 = this.prop();
+    if (p0) {
+        var expr = QueryFieldAggregator.prototype.compareWith.call(p0, { $bit : [ value, result] });
         this.__append(expr);
     }
     return this;
@@ -938,9 +839,9 @@ QueryExpression.prototype.ne = QueryExpression.prototype.notEqual;
  */
 QueryExpression.prototype.greaterThan = function(value)
 {
-    if (this.privates.__prop) {
-        var expr = {};
-        expr[this.privates.__prop] = { $gt : value };
+    var p0 = this.prop();
+    if (p0) {
+        var expr = QueryFieldAggregator.prototype.compareWith.call(p0, { $gt:value });
         this.__append(expr);
     }
     return this;
@@ -952,9 +853,9 @@ QueryExpression.prototype.greaterThan = function(value)
  */
 QueryExpression.prototype.startsWith = function(value)
 {
-    if (this.privates.__prop) {
-        var expr = {};
-        expr[this.privates.__prop] = { $startswith : [ value, true] };
+    var p0 = this.prop();
+    if (p0) {
+        var expr = QueryFieldAggregator.prototype.compareWith.call(p0, { $startswith : [ value, true ] });
         this.__append(expr);
     }
     return this;
@@ -966,9 +867,9 @@ QueryExpression.prototype.startsWith = function(value)
  */
 QueryExpression.prototype.endsWith = function(value)
 {
-    if (this.privates.__prop) {
-        var expr = {};
-        expr[this.privates.__prop] = { $endswith : [value, true] };
+    var p0 = this.prop();
+    if (p0) {
+        var expr = QueryFieldAggregator.prototype.compareWith.call(p0, { $endswith : [value, true] });
         this.__append(expr);
     }
     return this;
@@ -989,8 +890,7 @@ QueryExpression.prototype.contains = function(value)
 {
     var p0 = this.prop();
     if (p0) {
-        var expr = {};
-        expr[p0] = { $text: value };
+        var expr = QueryFieldAggregator.prototype.compareWith.call(p0, { $text: value });
         this.__append(expr);
     }
     return this;
@@ -1000,8 +900,7 @@ QueryExpression.prototype.notContains = function(value)
 {
     var p0 = this.prop();
     if (p0) {
-        var expr = { $not: { } };
-        expr.$not[p0] = { $text: value };
+        var expr = { $not: QueryFieldAggregator.prototype.compareWith.call(p0, { $text: value }) };
         this.__append(expr);
     }
     return this;
@@ -1014,9 +913,9 @@ QueryExpression.prototype.gt = QueryExpression.prototype.greaterThan;
  */
 QueryExpression.prototype.lowerThan = function(value)
 {
-    if (this.privates.__prop) {
-        var expr = {};
-        expr[this.privates.__prop] = { $lt : value };
+    var p0 = this.prop();
+    if (p0) {
+        var expr = QueryFieldAggregator.prototype.compareWith.call(p0, { $lt:value });
         this.__append(expr);
     }
     return this;
@@ -1032,9 +931,9 @@ QueryExpression.prototype.lt = QueryExpression.prototype.lowerThan;
  */
 QueryExpression.prototype.lowerOrEqual = function(value)
 {
-    if (this.privates.__prop) {
-        var expr = {};
-        expr[this.privates.__prop] = { $lte : value };
+    var p0 = this.prop();
+    if (p0) {
+        var expr = QueryFieldAggregator.prototype.compareWith.call(p0, { $lte:value });
         this.__append(expr);
     }
     return this;
@@ -1047,9 +946,9 @@ QueryExpression.prototype.lte = QueryExpression.prototype.lowerOrEqual;
  */
 QueryExpression.prototype.greaterOrEqual = function(value)
 {
-    if (this.privates.__prop) {
-        var expr = {};
-        expr[this.privates.__prop] = { $gte : value };
+    var p0 = this.prop();
+    if (p0) {
+        var expr = QueryFieldAggregator.prototype.compareWith.call(p0, { $gte:value });
         this.__append(expr);
     }
     return this;
@@ -1064,9 +963,9 @@ QueryExpression.prototype.between = function(value1, value2)
 {
     var p0 = this.prop();
     if (p0) {
+        var comp1 = QueryFieldAggregator.prototype.compareWith.call(p0, { $gte:value1 });
+        var comp2 = QueryFieldAggregator.prototype.compareWith.call(p0, { $lte:value2 });
         var expr = {};
-        var comp1 = {}; comp1[p0] =  { $gte:value1 };
-        var comp2 = {}; comp2[p0] =  { $lte:value2 };
         expr['$and'] = [ comp1, comp2 ];
         this.__append(expr);
     }
@@ -1401,7 +1300,16 @@ QueryField.prototype.name = function() {
 };
 
 QueryField.prototype.nameOf = function() {
-    var alias = this.as();
+
+    if ((typeof this === 'string') || (this instanceof String)) {
+        return this;
+    }
+    var alias;
+    if (typeof this.as === 'function')
+        alias = this.as();
+    else
+        alias = QueryField.prototype.as.call(this);
+
     if (alias) {
         return this[alias];
     }
@@ -1461,6 +1369,39 @@ QueryField.sum = function(name) {
     var f = new QueryField();
     return f.sum(name);
 };
+/**
+ * @class QueryFieldAggregator
+ * @constructor
+ */
+function QueryFieldAggregator() {
+    //
+}
+/**
+ *
+ * @param {*} comparison
+ * @returns {*}
+ */
+QueryFieldAggregator.prototype.compareWith = function(comparison) {
+    var expr = { };
+    if ((typeof this === 'string') || (this instanceof String)) {
+        expr[this] = comparison;
+        return expr;
+    }
+    //get aggregate function
+    var aggr = Object.key(this), name;
+    if (util.isArray(this[aggr])) {
+        //get first element (the field name)
+        name = QueryField.prototype.nameOf.call(this[aggr][0]);
+    }
+    else {
+        //get element (the field name)
+        name = QueryField.prototype.nameOf.call(this[aggr]);
+    }
+    expr[name] = { };
+    expr[name][aggr] = comparison;
+    return expr;
+};
+
 /**
  * @class OpenDataQuery
  * @constructor
@@ -1563,7 +1504,7 @@ OpenDataQuery.prototype.select = function(attr) {
 OpenDataQuery.prototype.take = function(val) {
     this.$top = isNaN(val) ? 0 : val;
     return this;
-}
+};
 /**
  * @param {number} val
  * @returns OpenDataQuery
@@ -1571,7 +1512,7 @@ OpenDataQuery.prototype.take = function(val) {
 OpenDataQuery.prototype.skip = function(val) {
     this.$skip = isNaN(val) ? 0 : val;
     return this;
-}
+};
 
 /**
  * @param {String} name
@@ -1581,7 +1522,7 @@ OpenDataQuery.prototype.orderBy = function(name) {
     if (typeof name !=='undefined' || name!=null)
         this.$orderby = name.toString();
     return this;
-}
+};
 
 /**
  * @param {String} name
