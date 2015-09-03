@@ -275,10 +275,10 @@ SqlFormatter.prototype.formatWhere = function(where)
                     //otherwise throw error
                     throw new Error('Invalid query argument. An in statement must contain one or more values.');
                 case '$nin':
-                    if (util.isArray(comparison.$in)) {
-                        if (comparison.$in.length==0)
+                    if (util.isArray(comparison.$nin)) {
+                        if (comparison.$nin.length==0)
                             return util.format('(NOT %s IN (NULL))', escapedProperty);
-                        sql = '(NOT '.concat(escapedProperty,' IN (',array(comparison.$in).select(function (x) {
+                        sql = '(NOT '.concat(escapedProperty,' IN (',array(comparison.$nin).select(function (x) {
                             return self.escape(x!=null ? x: null)
                         }).toArray().join(', '),'))');
                         return sql;
@@ -684,7 +684,7 @@ SqlFormatter.prototype.formatSelect = function(obj)
                 //the default left table is the query entity
                     leftTable =  entity,
                 //the default right table is the join entity
-                    rightTable = table
+                    rightTable = table;
                 if (typeof left === 'object') {
                     leftTable = Object.key(left);
                 }
@@ -1047,7 +1047,7 @@ SqlFormatter.prototype.format = function(obj, s)
     else
         return null;
 
-}
+};
 
 if (typeof exports !== 'undefined') {
     module.exports = {

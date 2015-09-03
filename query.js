@@ -1863,22 +1863,19 @@ OpenDataQuery.prototype.notIn = function(values) {
 
 if (typeof exports !== 'undefined') {
     /**
-     * @class QueryExpression
-     * @constructor
+     * @constructs QueryExpression
      */
     module.exports.QueryExpression = QueryExpression;
     /**
-     * @class QueryField
-     * @constructor
+     * @constructs QueryField
      */
     module.exports.QueryField = QueryField;
     /**
-     * @class QueryEntity
-     * @constructor
+     * @constructs QueryEntity
      */
     module.exports.QueryEntity = QueryEntity;
     /**
-     * @class OpenDataQuery
+     * @constructs QueryEntity
      * @constructor
      */
     module.exports.OpenDataQuery = OpenDataQuery;
