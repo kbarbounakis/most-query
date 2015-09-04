@@ -16,27 +16,23 @@ var util = require('util'),
     frmt = require('./formatter'),
     closures = require('./closures'),
     sqlutils = require('./sql-utils'),
-    /**
-     * @constructs SqlFormatter
-     */
-    SqlFormatter = frmt.SqlFormatter,
-    query = require('./query'),
+    qryq = require('./query'),
     /**
      * @constructs QueryExpression
      */
-    QueryExpression = query.QueryExpression,
+    QueryExpression = qryq.QueryExpression,
     /**
      * @constructs QueryField
      */
-    QueryField = query.QueryField,
+    QueryField = qryq.QueryField,
     /**
      * @constructs QueryEntity
      */
-    QueryEntity = query.QueryEntity,
+    QueryEntity = qryq.QueryEntity,
     /**
      * @constructs ODataFormatter
      */
-    OpenDataQuery = query.OpenDataQuery;
+    OpenDataQuery = qryq.OpenDataQuery;
 
 /**
  * @module most-query
@@ -61,7 +57,7 @@ var qry = {
         /**
          * @constructs SqlFormatter
          */
-        SqlFormatter:SqlFormatter,
+        SqlFormatter:frmt.SqlFormatter,
         /**
          * @constructs OpenDataQuery
          */
@@ -229,9 +225,105 @@ var qry = {
          * @param name {string}
          * @returns {QueryField}
          */
+        floor:function(name) {
+            var f = { };
+            f[name] = { $floor:[ qry.fields.select(name) ] };
+            return util._extend(new QueryField(), f);
+        },
+        /**
+         * @param name {string}
+         * @returns {QueryField}
+         */
+        ceil:function(name) {
+            var f = { };
+            f[name] = { $ceiling:[ qry.fields.select(name) ] };
+            return util._extend(new QueryField(), f);
+        },
+        /**
+         * @param {string} name
+         * @param {number|*} divider
+         * @returns {QueryField}
+         */
+        modulo:function(name, divider) {
+            var f = { };
+            f[name] = { $mod:[ qry.fields.select(name), divider ] };
+            return util._extend(new QueryField(), f);
+        },
+        /**
+         * @param {string} name
+         * @param {number|*} x
+         * @returns {QueryField}
+         */
+        add:function(name, x) {
+            var f = { };
+            f[name] = { $add:[ qry.fields.select(name), x ] };
+            return util._extend(new QueryField(), f);
+        },
+        /**
+         * @param {string} name
+         * @param {number|*} x
+         * @returns {QueryField}
+         */
+        subtract:function(name, x) {
+            var f = { };
+            f[name] = { $subtract:[ qry.fields.select(name), x ] };
+            return util._extend(new QueryField(), f);
+        },
+        /**
+         * @param {string} name
+         * @param {number|*} divider
+         * @returns {QueryField}
+         */
+        divide:function(name, divider) {
+            var f = { };
+            f[name] = { $divide:[ qry.fields.select(name), divider ] };
+            return util._extend(new QueryField(), f);
+        },
+        /**
+         * @param {string} name
+         * @param {number|*} multiplier
+         * @returns {QueryField}
+         */
+        multiply:function(name, multiplier) {
+            var f = { };
+            f[name] = { $multiply:[ qry.fields.select(name), multiplier ] };
+            return util._extend(new QueryField(), f);
+        },
+        /**
+         * @param {string} name
+         * @param {number=} n
+         * @returns {QueryField}
+         */
+        round:function(name, n) {
+            var f = { };
+            f[name] = { $round:[ qry.fields.select(name), 2 ] };
+            return util._extend(new QueryField(), f);
+        },
+        /**
+         * @param name {string}
+         * @returns {QueryField}
+         */
         month:function(name) {
             var f = { };
             f[name] = { $month:[ qry.fields.select(name) ] };
+            return util._extend(new QueryField(), f);
+        },
+        /**
+         * @param name {string}
+         * @returns {QueryField}
+         */
+        length:function(name) {
+            var f = { };
+            f[name] = { $length:[ qry.fields.select(name) ] };
+            return util._extend(new QueryField(), f);
+        },
+        /**
+         * @param name {string}
+         * @returns {QueryField}
+         */
+        trim:function(name) {
+            var f = { };
+            f[name] = { $trim:[ qry.fields.select(name) ] };
             return util._extend(new QueryField(), f);
         },
         /**

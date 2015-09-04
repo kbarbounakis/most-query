@@ -66,7 +66,6 @@ if (typeof Object.key !== 'function') {
 
 
 
-
 /**
  * Initializes an SQL formatter class.
  * @class SqlFormatter
@@ -148,6 +147,11 @@ SqlFormatter.prototype.formatComparison = function(comparison)
     }
 };
 
+SqlFormatter.prototype.isComparison = function(obj) {
+    var key = Object.key(obj);
+    return (/^\$(eq|ne|lt|lte|gt|gte|in|nin|text|regex)$/g.test(key));
+};
+
 
 /**
  * Escapes an object or a value and returns the equivalent sql value.
@@ -183,7 +187,7 @@ SqlFormatter.prototype.escape = function(value,unquoted)
 SqlFormatter.prototype.escapeConstant = function(value,unquoted)
 {
     return this.escape(value,unquoted);
-}
+};
 /**
  * Formats a where expression object and returns the equivalen SQL string expression.
  * @param {*} where - An object that represents the where expression object to be formatted.
@@ -235,7 +239,7 @@ SqlFormatter.prototype.formatWhere = function(where)
             var escapedProperty = this.escapeName(property);
             switch (op) {
                 case '$text':
-                    return self.$text({ $name:property}, comparison.$text);
+                    return self.$text({ $name:property}, comparison.$text.$search);
                 case '$eq':
                     if (typeof comparison.$eq === 'undefined' || comparison.$eq==null)
                         return util.format('(%s IS NULL)', escapedProperty);
@@ -255,6 +259,8 @@ SqlFormatter.prototype.formatWhere = function(where)
                         return util.format('(NOT %s=%s)', escapedProperty, self.escape(comparison.$ne));
                     else
                         return util.format('(NOT %s IS NULL)', escapedProperty);
+                case '$regex':
+                    return this.$regex({ $name:property} , comparison.$regex);
                 case '$in':
                     if (util.isArray(comparison.$in)) {
                         if (comparison.$in.length==0)
@@ -315,8 +321,14 @@ SqlFormatter.prototype.formatWhere = function(where)
                             argn = p1[p1.length-1];
                         }
                         else {
-                            //get comparison argument (equal)
-                            argn = { $eq: p1.valueOf() };
+                            if (self.isComparison(p1)) {
+                                argn = p1;
+                            }
+                            else {
+                                //get comparison argument (equal)
+                                argn = { $eq: p1.valueOf() };
+                            }
+
                         }
                         //call formatter function
                         var f0 = fn.apply(this, args);
@@ -360,6 +372,21 @@ SqlFormatter.prototype.$endswith = function(p0, p1)
     if (Object.isNullOrUndefined(p0) || Object.isNullOrUndefined(p1))
         return '';
     var result = util.format('(%s REGEXP \'%s$$\')', this.escape(p0), this.escape(p1, true));
+    return result;
+};
+
+/**
+ * Implements regular expression formatting.
+ * @param {*} p0
+ * @param {*} p1
+ * @returns {string}
+ */
+SqlFormatter.prototype.$regex = function(p0, p1)
+{
+    //validate params
+    if (Object.isNullOrUndefined(p0) || Object.isNullOrUndefined(p1))
+        return '';
+    var result = util.format('(%s REGEXP \'%s\')', this.escape(p0), this.escape(p1, true));
     return result;
 };
 
@@ -408,6 +435,8 @@ SqlFormatter.prototype.$indexof = function(p0, p1)
     return util.format('LOCATE(%s,%s)', this.escape(p1), this.escape(p0));
 };
 
+SqlFormatter.prototype.$indexOf = SqlFormatter.prototype.$indexof;
+
 /**
  * Implements substring(str,pos) expression formatter.
  * @param {String} p0 The source string
@@ -423,6 +452,8 @@ SqlFormatter.prototype.$substring = function(p0, pos, length)
         return util.format('SUBSTRING(%s,%s)', this.escape(p0), pos.valueOf()+1);
 };
 
+SqlFormatter.prototype.$substr = SqlFormatter.prototype.$substring;
+
 /**
  * Implements lower(str) expression formatter.
  * @param {String} p0
@@ -432,7 +463,7 @@ SqlFormatter.prototype.$tolower = function(p0)
 {
     return util.format('LOWER(%s)', this.escape(p0));
 };
-
+SqlFormatter.prototype.$toLower = SqlFormatter.prototype.$tolower;
 /**
  * Implements upper(str) expression formatter.
  * @param {String} p0
@@ -442,7 +473,7 @@ SqlFormatter.prototype.$toupper = function(p0)
 {
     return util.format('UPPER(%s)', this.escape(p0));
 };
-
+SqlFormatter.prototype.$toUpper = SqlFormatter.prototype.$toupper;
 /**
  * Implements contains(a,b) expression formatter.
  * @param {*} p0
@@ -471,11 +502,14 @@ SqlFormatter.prototype.$text = function(p0, p1)
 };
 
 SqlFormatter.prototype.$day = function(p0) { return util.format('DAY(%s)', this.escape(p0)); };
+SqlFormatter.prototype.$dayOfMonth = SqlFormatter.prototype.$day;
 SqlFormatter.prototype.$month = function(p0) { return util.format('MONTH(%s)', this.escape(p0)); };
 SqlFormatter.prototype.$year = function(p0) { return util.format('YEAR(%s)', this.escape(p0)); };
 SqlFormatter.prototype.$hour = function(p0) { return util.format('HOUR(%s)', this.escape(p0)); };
 SqlFormatter.prototype.$minute = function(p0) { return util.format('MINUTE(%s)', this.escape(p0)); };
+SqlFormatter.prototype.$minutes = SqlFormatter.prototype.$minute;
 SqlFormatter.prototype.$second = function(p0) { return util.format('SECOND(%s)', this.escape(p0)); };
+SqlFormatter.prototype.$seconds = SqlFormatter.prototype.$second;
 SqlFormatter.prototype.$date = function(p0) {
     return util.format('DATE(%s)', this.escape(p0));
 };
@@ -538,6 +572,8 @@ SqlFormatter.prototype.$sub = function(p0, p1)
     return util.format('(%s - %s)', this.escape(p0), this.escape(p1));
 };
 
+SqlFormatter.prototype.$subtract = SqlFormatter.prototype.$sub;
+
 /**
  * Implements a * b expression formatter.
  * @param p0 {*}
@@ -550,6 +586,8 @@ SqlFormatter.prototype.$mul = function(p0, p1)
         return '0';
     return util.format('(%s * %s)', this.escape(p0), this.escape(p1));
 };
+
+SqlFormatter.prototype.$multiply = SqlFormatter.prototype.$mul;
 
 /**
  * Implements a mod b expression formatter.
@@ -576,6 +614,8 @@ SqlFormatter.prototype.$div = function(p0, p1)
         return '0';
     return util.format('(%s / %s)', this.escape(p0), this.escape(p1));
 };
+
+SqlFormatter.prototype.$divide = SqlFormatter.prototype.$div;
 
 /**
  * Implements [a mod b] expression formatter.
