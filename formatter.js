@@ -156,7 +156,7 @@ SqlFormatter.prototype.isComparison = function(obj) {
 /**
  * Escapes an object or a value and returns the equivalent sql value.
  * @param {*} value - A value that is going to be escaped for SQL statements
- * @param {boolean} unquoted - An optional value that indicates whether the resulted string will be quoted or not.
+ * @param {boolean=} unquoted - An optional value that indicates whether the resulted string will be quoted or not.
  * @returns {string} - The equivalent SQL string value
  */
 SqlFormatter.prototype.escape = function(value,unquoted)
@@ -371,14 +371,13 @@ SqlFormatter.prototype.$endswith = function(p0, p1)
     //validate params
     if (Object.isNullOrUndefined(p0) || Object.isNullOrUndefined(p1))
         return '';
-    var result = util.format('(%s REGEXP \'%s$$\')', this.escape(p0), this.escape(p1, true));
-    return result;
+    return util.format('(%s REGEXP \'%s$$\')', this.escape(p0), this.escape(p1, true));
 };
 
 /**
  * Implements regular expression formatting.
  * @param {*} p0
- * @param {*} p1
+ * @param {string|*} p1
  * @returns {string}
  */
 SqlFormatter.prototype.$regex = function(p0, p1)
@@ -386,8 +385,7 @@ SqlFormatter.prototype.$regex = function(p0, p1)
     //validate params
     if (Object.isNullOrUndefined(p0) || Object.isNullOrUndefined(p1))
         return '';
-    var result = util.format('(%s REGEXP \'%s\')', this.escape(p0), this.escape(p1, true));
-    return result;
+    return util.format('(%s REGEXP \'%s\')', this.escape(p0), this.escape(p1, true));
 };
 
 /**
