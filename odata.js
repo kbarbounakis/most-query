@@ -434,7 +434,7 @@ OpenDataParser.prototype.parseMember = function(callback) {
         }
         else {
             var identifier = this.currentToken.identifier;
-            if (this.nextToken.syntax==SyntaxToken.Slash.syntax) {
+            while (this.nextToken.syntax==SyntaxToken.Slash.syntax) {
                 //read syntax token
                 this.moveNext();
                 //get next token
@@ -445,6 +445,8 @@ OpenDataParser.prototype.parseMember = function(callback) {
                 //format identifier
                 identifier += '/' + this.currentToken.identifier;
             }
+            //search for multiple nested member expression (e.g. a/b/c)
+
             self.resolveMember(identifier, function(err, member) {
                 callback.call(self, err,expressions.createMemberExpression(member));
             });
