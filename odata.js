@@ -139,13 +139,17 @@ OpenDataParser.prototype.parse = function(str, callback) {
     //invoke callback
     this.parseCommon(function(err, result)
     {
-        if (result) {
-            if (typeof result.exprOf === 'function') {
-                callback.call(self, err, result.exprOf());
-                return;
+        try {
+            if (result) {
+                if (typeof result.exprOf === 'function') {
+                    return callback.call(self, err, result.exprOf());
+                }
             }
+            callback.call(self, err, result);
         }
-        callback.call(self, err, result);
+        catch(e) {
+            callback.call(self, e);
+        }
     });
 
 };
