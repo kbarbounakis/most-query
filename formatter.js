@@ -222,7 +222,7 @@ SqlFormatter.prototype.formatWhere = function(where)
         default:
             var comparison = propertyValue;
             var op =  null, sql = null;
-            if (comparison instanceof QueryField) {
+            if ((comparison.constructor) && (comparison.constructor.name === 'QueryField')) {
                 op = '$eq';
                 comparison = {$eq:propertyValue};
             }
@@ -972,7 +972,7 @@ SqlFormatter.prototype.formatFieldEx = function(obj, s)
 
     if (obj==null)
         return null;
-    if (!(obj instanceof QueryField))
+    if (!((obj.constructor) && (obj.constructor.name === 'QueryField')))
         throw new Error('Invalid argument. An instance of QueryField class is expected.');
     //get property
     var prop = Object.key(obj);
