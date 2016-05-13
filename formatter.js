@@ -181,7 +181,7 @@ SqlFormatter.prototype.escape = function(value,unquoted)
 /**
  * Escapes an object or a value and returns the equivalent sql value.
  * @param {*} value - A value that is going to be escaped for SQL statements
- * @param {boolean} unquoted - An optional value that indicates whether the resulted string will be quoted or not.
+ * @param {boolean=} unquoted - An optional value that indicates whether the resulted string will be quoted or not.
  * returns {string} - The equivalent SQL string value
  */
 SqlFormatter.prototype.escapeConstant = function(value,unquoted)
@@ -222,7 +222,7 @@ SqlFormatter.prototype.formatWhere = function(where)
         default:
             var comparison = propertyValue;
             var op =  null, sql = null;
-            if ((comparison.constructor) && (comparison.constructor.name === 'QueryField')) {
+            if (isQueryField_(comparison)) {
                 op = '$eq';
                 comparison = {$eq:propertyValue};
             }
@@ -960,25 +960,31 @@ SqlFormatter.prototype.escapeName = function(name) {
     if (typeof name === 'string')
         return name.replace(/(\w+)$|^(\w+)$/g, this.settings.nameFormat);
     return name;
+};
+
+function isQueryField_(obj) {
+    if ((typeof obj === 'undefined') || (obj==null))
+        return false;
+    return (obj.constructor) && (obj.constructor.name === 'QueryField');
 }
 
 /**
  * @param obj {QueryField}
- * @param obj {QueryField}
- * @returns {string}
+ * @param format {string}
+ * @returns {string|*}
  */
-SqlFormatter.prototype.formatFieldEx = function(obj, s)
+SqlFormatter.prototype.formatFieldEx = function(obj, format)
 {
 
-    if (obj==null)
+    if ((typeof obj === 'undefined') || (obj==null))
         return null;
-    if (!((obj.constructor) && (obj.constructor.name === 'QueryField')))
+    if (!isQueryField_(obj))
         throw new Error('Invalid argument. An instance of QueryField class is expected.');
     //get property
     var prop = Object.key(obj);
     if (prop==null)
         return null;
-    var useAlias = (s=='%f');
+    var useAlias = (format=='%f');
     if (prop==='$name') {
         return (this.settings.forceAlias && useAlias) ? this.escapeName(obj.$name).concat(' AS ', this.escapeName(obj.name())) : this.escapeName(obj.$name);
     }
@@ -992,7 +998,7 @@ SqlFormatter.prototype.formatFieldEx = function(obj, s)
         //get aggregate expression
         var alias = prop;
         prop = Object.key(expr);
-        var name = expr[prop], s = null;
+        var name = expr[prop], s;
         switch (prop) {
             case '$count':
                 s= util.format('COUNT(%s)',this.escapeName(name));
@@ -1010,7 +1016,7 @@ SqlFormatter.prototype.formatFieldEx = function(obj, s)
                 s= util.format('SUM(%s)',this.escapeName(name));
                 break;
             case '$value':
-                s= this.escapeConstant(name)
+                s= this.escapeConstant(name);
                 break;
             default :
                 var fn = this[prop];
@@ -1032,7 +1038,7 @@ SqlFormatter.prototype.formatFieldEx = function(obj, s)
  * Formats a query expression and returns the SQL equivalent string
  * @param obj {QueryExpression|*}
  * @param s {string=}
- * @returns {string}
+ * @returns {string|*}
  */
 SqlFormatter.prototype.format = function(obj, s)
 {
