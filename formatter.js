@@ -1095,9 +1095,6 @@ SqlFormatter.prototype.format = function(obj, s)
 
 if (typeof exports !== 'undefined') {
     module.exports = {
-        /**
-         * @constructs SqlFormatter
-         */
         SqlFormatter:SqlFormatter
     }
 }

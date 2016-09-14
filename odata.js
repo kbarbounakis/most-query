@@ -782,7 +782,7 @@ OpenDataParser.prototype.parseSpecialString = function(value, stringType)
  */
 OpenDataParser.prototype.parseString = function()
 {
-    var hasEnd = false;
+    var hadEnd = false;
     var _current = this.current, _source = this.source, _offset = this.offset;
     var sb = '';
     for (_current++; _current < _source.length; _current++)
@@ -826,7 +826,7 @@ OpenDataParser.prototype.skipDigits = function(current)
         current++;
     }
     return current;
-}
+};
 
 /**
  * @returns {Token}
