@@ -59,7 +59,7 @@ QueryFieldAggregator.prototype.wrapWith = function(comparison) {
  * @ignore
  */
 var util = require('util'),
-    _=require('./underscore-extra'),
+    _=require('lodash'),
     natives = require('./natives');
 
 /**
@@ -252,7 +252,7 @@ QueryExpression.prototype.fields = function() {
         }
     });
     return fields;
-}
+};
 
 /**
  * Gets a boolean value that indicates whether query expression has a filter statement or not.
@@ -350,7 +350,7 @@ QueryExpression.prototype.distinct = function(value)
  */
 QueryExpression.prototype.where = function(name)
 {
-    if (_.isNullOrUndefined(name))
+    if (_.isNil(name))
         throw new Error('Left operand cannot be empty. Expected string or object.');
     delete this.$where;
     if (typeof name === 'string') {
@@ -372,7 +372,7 @@ QueryExpression.prototype.where = function(name)
  */
 QueryExpression.prototype.injectWhere = function(where)
 {
-    if (_.isNullOrUndefined(where))
+    if (_.isNil(where))
         return this;
     this.$where = where;
 };
@@ -739,7 +739,7 @@ QueryExpression.prototype.__append = function(expr) {
  */
 QueryExpression.prototype.or = function(name)
 {
-    if (_.isNullOrUndefined(name))
+    if (_.isNil(name))
         throw new Error('Left operand cannot be empty. Expected string or object.');
     if (typeof name === 'string') {
         this.prop(name);
@@ -759,7 +759,7 @@ QueryExpression.prototype.or = function(name)
  */
 QueryExpression.prototype.and = function(name)
 {
-    if (_.isNullOrUndefined(name))
+    if (_.isNil(name))
         throw new Error('Left operand cannot be empty. Expected string or object.');
     if (typeof name === 'string') {
         this.prop(name);

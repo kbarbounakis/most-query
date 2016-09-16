@@ -12,7 +12,7 @@ var util = require('util'),
     expressions = require('./expressions'),
     esprima = require('esprima'),
     async = require('async'),
-    _ = require('./underscore-extra');
+    _ = require('lodash');
 
 var ExpressionTypes = {
     LogicalExpression : 'LogicalExpression',
@@ -60,7 +60,7 @@ ClosureParser.prototype.parseFilter = function(fn, callback) {
         var expr = esprima.parse('void(' + fn.toString() + ')');
         //get FunctionExpression
         var fnExpr = expr.body[0].expression.argument;
-        if (_.isNullOrUndefined(fnExpr)) {
+        if (_.isNil(fnExpr)) {
             callback(new Error('Invalid closure statement. Closure expression cannot be found.'));
             return;
         }
@@ -118,7 +118,7 @@ ClosureParser.prototype.parseLogical = function(expr, callback) {
     var self = this;
     var op = (expr.operator === '||') ? expressions.Operators.Or : expressions.Operators.And;
     //valdate operands
-    if (_.isNullOrUndefined(expr.left) || _.isNullOrUndefined(expr.right)) {
+    if (_.isNil(expr.left) || _.isNil(expr.right)) {
         callback(new Error('Invalid logical expression. Left or right operand is missig or undefined.'));
     }
     else {
@@ -174,7 +174,7 @@ ClosureParser.BinaryToExpressionOperator = function(op) {
 ClosureParser.prototype.parseBinary = function(expr, callback) {
     var self = this;
     var op = ClosureParser.BinaryToExpressionOperator(expr.operator);
-    if (_.isNullOrUndefined(op)) {
+    if (_.isNil(op)) {
         callback(new Error('Invalid binary operator.'));
     }
     else {
@@ -232,7 +232,7 @@ ClosureParser.prototype.parseBinary = function(expr, callback) {
 };
 
 function memberExpressionToString(expr) {
-    if (_.isNullOrUndefined(expr.object.object)) {
+    if (_.isNil(expr.object.object)) {
         return expr.object.name + '.' + expr.property.name
     }
     else {
@@ -241,7 +241,7 @@ function memberExpressionToString(expr) {
 }
 
 function parentMemberExpressionToString(expr) {
-    if (_.isNullOrUndefined(expr.object.object)) {
+    if (_.isNil(expr.object.object)) {
         return expr.object.name;
     }
     else {
@@ -254,7 +254,7 @@ ClosureParser.prototype.parseMember = function(expr, callback) {
         var self = this;
         if (expr.property) {
             var namedParam = self.namedParams[0];
-            if (_.isNullOrUndefined(namedParam)) {
+            if (_.isNil(namedParam)) {
                 callback('Invalid or missing closure parameter');
                 return;
             }
@@ -269,7 +269,7 @@ ClosureParser.prototype.parseMember = function(expr, callback) {
             }
             else {
                 var value;
-                if (_.isNullOrUndefined(expr.object.object)) {
+                if (_.isNil(expr.object.object)) {
                     //evaluate object member value e.g. item.title or item.status.id
                     value = self.eval(memberExpressionToString(expr));
                     callback(null, expressions.createLiteralExpression(value));
@@ -305,7 +305,7 @@ ClosureParser.prototype.parseMember = function(expr, callback) {
  */
 ClosureParser.prototype.parseMethodCall = function(expr, callback) {
     var self = this;
-    if (_.isNullOrUndefined(expr.callee.object)) {
+    if (_.isNil(expr.callee.object)) {
         callback(new Error('Invalid or unsupported method expression.'));
         return;
     }
@@ -373,9 +373,9 @@ ClosureParser.prototype.parseMethod = function(expr, callback) {
     try {
         //get method name
         var name = expr.callee.name, args = [], needsEvaluation = true, thisName;
-        if (_.isNullOrUndefined(name)) {
-            if (!_.isNullOrUndefined(expr.callee.object)) {
-                if (!_.isNullOrUndefined(expr.callee.object.object)) {
+        if (_.isNil(name)) {
+            if (!_.isNil(expr.callee.object)) {
+                if (!_.isNil(expr.callee.object.object)) {
                     if (expr.callee.object.object.name===self.namedParams[0].name) {
                         self.parseMethodCall(expr, callback);
                         return;
