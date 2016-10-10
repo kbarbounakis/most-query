@@ -10,7 +10,7 @@
  */
 var sqlutils = require('./sql-utils'),
     util = require('util'),
-    array = require('most-array'),
+    _ = require('lodash'),
     query = require('./query'),
     /**
      * @constructs QueryExpression
@@ -24,28 +24,6 @@ var sqlutils = require('./sql-utils'),
      * @constructs QueryEntity
      */
     QueryEntity = query.QueryEntity;
-
-if (typeof Object.isNullOrUndefined !== 'function') {
-    /**
-     * Gets a boolean that indicates whether the given object is null or undefined
-     * @param {*} obj
-     * @returns {boolean}
-     */
-    Object.isNullOrUndefined = function(obj) {
-        return (typeof obj === 'undefined') || (obj==null);
-    }
-}
-
-if (typeof Object.isObject !== 'function') {
-    /**
-     * Gets a boolean that indicates whether the given parameter is object
-     * @param {*} obj
-     * @returns {boolean}
-     */
-    Object.isObject = function(obj) {
-        return (typeof obj === 'object') && (obj!=null);
-    }
-}
 
 if (typeof Object.key !== 'function') {
     /**
@@ -176,7 +154,7 @@ SqlFormatter.prototype.escape = function(value,unquoted)
         return value.valueOf();
     else
         return sqlutils.escape(value);
-}
+};
 
 /**
  * Escapes an object or a value and returns the equivalent sql value.
@@ -215,9 +193,9 @@ SqlFormatter.prototype.formatWhere = function(where)
                 throw new Error('Invalid query argument. A logical expression must contain one or more comparison expressions.');
             if (propertyValue.length==0)
                 return '';
-            return '(' + array(propertyValue).select(function(x) {
+            return '(' + _.map(propertyValue, function(x) {
                 return self.formatWhere(x);
-            }).toArray().join(separator) + ')';
+            }).join(separator) + ')';
             break;
         default:
             var comparison = propertyValue;
@@ -265,9 +243,9 @@ SqlFormatter.prototype.formatWhere = function(where)
                     if (util.isArray(comparison.$in)) {
                         if (comparison.$in.length==0)
                             return util.format('(%s IN (NULL))', escapedProperty);
-                        sql = '('.concat(escapedProperty,' IN (',array(comparison.$in).select(function (x) {
+                        sql = '('.concat(escapedProperty,' IN (',_.map(comparison.$in, function (x) {
                             return self.escape(x!=null ? x: null)
-                        }).toArray().join(', '),'))');
+                        }).join(', '),'))');
                         return sql;
                     }
                     else if (typeof comparison.$in === 'object') {
@@ -284,9 +262,9 @@ SqlFormatter.prototype.formatWhere = function(where)
                     if (util.isArray(comparison.$nin)) {
                         if (comparison.$nin.length==0)
                             return util.format('(NOT %s IN (NULL))', escapedProperty);
-                        sql = '(NOT '.concat(escapedProperty,' IN (',array(comparison.$nin).select(function (x) {
+                        sql = '(NOT '.concat(escapedProperty,' IN (',_.map(comparison.$nin, function (x) {
                             return self.escape(x!=null ? x: null)
-                        }).toArray().join(', '),'))');
+                        }).join(', '),'))');
                         return sql;
                     }
                     else if (typeof comparison.$in === 'object') {
@@ -355,7 +333,7 @@ SqlFormatter.prototype.formatWhere = function(where)
 SqlFormatter.prototype.$startswith = function(p0, p1)
 {
     //validate params
-    if (Object.isNullOrUndefined(p0) || Object.isNullOrUndefined(p1))
+    if (_.isNil(p0) || _.isNil(p1))
         return '';
     return util.format('(%s REGEXP \'^%s\')', this.escape(p0), this.escape(p1, true));
 };
@@ -369,7 +347,7 @@ SqlFormatter.prototype.$startswith = function(p0, p1)
 SqlFormatter.prototype.$endswith = function(p0, p1)
 {
     //validate params
-    if (Object.isNullOrUndefined(p0) || Object.isNullOrUndefined(p1))
+    if (_.isNil(p0) || _.isNil(p1))
         return '';
     return util.format('(%s REGEXP \'%s$$\')', this.escape(p0), this.escape(p1, true));
 };
@@ -383,7 +361,7 @@ SqlFormatter.prototype.$endswith = function(p0, p1)
 SqlFormatter.prototype.$regex = function(p0, p1)
 {
     //validate params
-    if (Object.isNullOrUndefined(p0) || Object.isNullOrUndefined(p1))
+    if (_.isNil(p0) || _.isNil(p1))
         return '';
     return util.format('(%s REGEXP \'%s\')', this.escape(p0), this.escape(p1, true));
 };
@@ -492,7 +470,7 @@ SqlFormatter.prototype.$contains = function(p0, p1)
 SqlFormatter.prototype.$text = function(p0, p1)
 {
     //validate params
-    if (Object.isNullOrUndefined(p0) || Object.isNullOrUndefined(p1))
+    if (_.isNil(p0) || _.isNil(p1))
         return '';
     if (p1.valueOf().toString().length==0)
         return '';
@@ -524,7 +502,7 @@ SqlFormatter.prototype.$ceiling = function(p0) { return util.format('CEILING(%s)
  * @returns {string}
  */
 SqlFormatter.prototype.$round = function(p0,p1) {
-    if (Object.isNullOrUndefined(p1))
+    if (_.isNil(p1))
         p1 = 0;
     return util.format('ROUND(%s,%s)', this.escape(p0), this.escape(p1));
 };
@@ -538,7 +516,7 @@ SqlFormatter.prototype.$round = function(p0,p1) {
 SqlFormatter.prototype.$add = function(p0, p1)
 {
     //validate params
-    if (Object.isNullOrUndefined(p0) || Object.isNullOrUndefined(p1))
+    if (_.isNil(p0) || _.isNil(p1))
         return '0';
     return util.format('(%s + %s)', this.escape(p0), this.escape(p1));
 };
@@ -565,7 +543,7 @@ SqlFormatter.prototype.isField = function(obj) {
 SqlFormatter.prototype.$sub = function(p0, p1)
 {
     //validate params
-    if (Object.isNullOrUndefined(p0) || Object.isNullOrUndefined(p1))
+    if (_.isNil(p0) || _.isNil(p1))
         return '0';
     return util.format('(%s - %s)', this.escape(p0), this.escape(p1));
 };
@@ -580,7 +558,7 @@ SqlFormatter.prototype.$subtract = SqlFormatter.prototype.$sub;
 SqlFormatter.prototype.$mul = function(p0, p1)
 {
     //validate params
-    if (Object.isNullOrUndefined(p0) || Object.isNullOrUndefined(p1))
+    if (_.isNil(p0) || _.isNil(p1))
         return '0';
     return util.format('(%s * %s)', this.escape(p0), this.escape(p1));
 };
@@ -595,7 +573,7 @@ SqlFormatter.prototype.$multiply = SqlFormatter.prototype.$mul;
 SqlFormatter.prototype.$mod = function(p0, p1)
 {
     //validate params
-    if (Object.isNullOrUndefined(p0) || Object.isNullOrUndefined(p1))
+    if (_.isNil(p0) || _.isNil(p1))
         return '0';
     return util.format('(%s % %s)', this.escape(p0), this.escape(p1));
 };
@@ -608,7 +586,7 @@ SqlFormatter.prototype.$mod = function(p0, p1)
 SqlFormatter.prototype.$div = function(p0, p1)
 {
     //validate params
-    if (Object.isNullOrUndefined(p0) || Object.isNullOrUndefined(p1))
+    if (_.isNil(p0) || _.isNil(p1))
         return '0';
     return util.format('(%s / %s)', this.escape(p0), this.escape(p1));
 };
@@ -623,10 +601,10 @@ SqlFormatter.prototype.$divide = SqlFormatter.prototype.$div;
 SqlFormatter.prototype.$mod = function(p0, p1)
 {
     //validate params
-    if (Object.isNullOrUndefined(p0) || Object.isNullOrUndefined(p1))
+    if (_.isNil(p0) || _.isNil(p1))
         return '0';
     return util.format('(%s % %s)', this.escape(p0), this.escape(p1));
-}
+};
 
 /**
  * Implements [a & b] bitwise and expression formatter.
@@ -636,10 +614,10 @@ SqlFormatter.prototype.$mod = function(p0, p1)
 SqlFormatter.prototype.$bit = function(p0, p1)
 {
     //validate params
-    if (Object.isNullOrUndefined(p0) || Object.isNullOrUndefined(p1))
+    if (_.isNil(p0) || _.isNil(p1))
         return '0';
     return util.format('(%s & %s)', this.escape(p0), this.escape(p1));
-}
+};
 
 /**
  *
@@ -649,7 +627,7 @@ SqlFormatter.prototype.$bit = function(p0, p1)
 SqlFormatter.prototype.formatSelect = function(obj)
 {
     var $this = this, sql = '', escapedEntity;
-    if (!Object.isObject(obj.$select))
+    if (_.isNil(obj.$select))
         throw new Error('Select expression cannot be empty at this context.');
     //get entity name
     var entity = Object.key(obj.$select);
@@ -679,14 +657,14 @@ SqlFormatter.prototype.formatSelect = function(obj)
     }
     //add basic SELECT statement
     if (obj.$fixed) {
-        sql = sql.concat('SELECT * FROM (SELECT ', array(fields).select(function(x) {
+        sql = sql.concat('SELECT * FROM (SELECT ', _.map(fields, function(x) {
             return $this.format(x,'%f');
-        }).toArray().join(', '), ') ', escapedEntity);
+        }).join(', '), ') ', escapedEntity);
     }
     else {
-        sql = sql.concat(obj.$distinct ? 'SELECT DISTINCT ' : 'SELECT ', array(fields).select(function(x) {
+        sql = sql.concat(obj.$distinct ? 'SELECT DISTINCT ' : 'SELECT ', _.map(fields, function(x) {
             return $this.format(x,'%f');
-        }).toArray().join(', '), ' FROM ', escapedEntity);
+        }).join(', '), ' FROM ', escapedEntity);
     }
 
 
@@ -694,7 +672,7 @@ SqlFormatter.prototype.formatSelect = function(obj)
     if (obj.$expand!=null)
     {
         //enumerate joins
-        array(joins).each(function(x) {
+        _.forEach(joins, function(x) {
             if (x.$entity instanceof QueryExpression) {
                 //get on statement (the join comparison)
                 sql = sql.concat(util.format(' INNER JOIN (%s)', $this.format(x.$entity)));
@@ -754,10 +732,10 @@ SqlFormatter.prototype.formatSelect = function(obj)
         });
     }
     //add WHERE statement if any
-    if (Object.isObject(obj.$where))
+    if (_.isObject(obj.$where))
     {
-        if (Object.isObject(obj.$prepared)) {
-            var where1 = { $and: [obj.$where, obj.$prepared] }
+        if (_.isObject(obj.$prepared)) {
+            var where1 = { $and: [obj.$where, obj.$prepared] };
             sql = sql.concat(' WHERE ',this.formatWhere(where1));
         }
         else {
@@ -766,15 +744,15 @@ SqlFormatter.prototype.formatSelect = function(obj)
 
     }
     else {
-        if (Object.isObject(obj.$prepared))
+        if (_.isObject(obj.$prepared))
             sql = sql.concat(' WHERE ',this.formatWhere(obj.$prepared));
     }
 
-    if (Object.isObject(obj.$group))
+    if (_.isObject(obj.$group))
         sql = sql.concat(this.formatGroupBy(obj.$group));
 
-    if (Object.isObject(obj.$order))
-        sql = sql.concat(this.formatOrder(obj.$order))
+    if (_.isObject(obj.$order))
+        sql = sql.concat(this.formatOrder(obj.$order));
 
     //finally return statement
     return sql;
@@ -796,7 +774,7 @@ SqlFormatter.prototype.formatLimitSelect = function(obj) {
             sql= sql.concat(' LIMIT ',  obj.$take.toString());
     }
     return sql;
-}
+};
 
 SqlFormatter.prototype.formatField = function(obj)
 {
@@ -806,9 +784,9 @@ SqlFormatter.prototype.formatField = function(obj)
     if (typeof obj === 'string')
         return obj;
     if (util.isArray(obj)) {
-        return array(fields).select(function(x) {
+        return _.map(obj, function(x) {
             return x.valueOf();
-        }).toArray().join(', ');
+        }).join(', ');
     }
     if (typeof obj === 'object') {
         //if field is a constant e.g. { $value:1000 }
@@ -823,12 +801,12 @@ SqlFormatter.prototype.formatField = function(obj)
         else {
             fields = obj[tableName];
         }
-        return array(fields).select(function(x) {
+        return _.map(fields, function(x) {
             if (QueryField.fieldNameExpression.test(x.valueOf()))
                 return self.escapeName(tableName.concat('.').concat(x.valueOf()));
             else
                 return self.escapeName(x.valueOf());
-        }).toArray().join(', ');
+        }).join(', ');
     }
 };
 
@@ -842,18 +820,18 @@ SqlFormatter.prototype.formatOrder = function(obj)
     var self = this;
     if (!util.isArray(obj))
         return '';
-    var sql = array(obj).select(function(x)
+    var sql = _.map(obj, function(x)
     {
         var f = x.$desc ? x.$desc : x.$asc;
         if (typeof f === 'undefined' || f==null)
             throw new Error('An order by object must have either ascending or descending property.');
         if (util.isArray(f)) {
-            return array(f).select(function(a) {
+            return _.map(f, function(a) {
                 return self.format(a,'%ff').concat(x.$desc ? ' DESC': ' ASC');
             }).join(', ');
         }
         return self.format(f,'%ff').concat(x.$desc ? ' DESC': ' ASC');
-    }).toArray().join(', ');
+    }).join(', ');
     if (sql.length>0)
         return ' ORDER BY '.concat(sql);
     return sql;
@@ -869,7 +847,7 @@ SqlFormatter.prototype.formatGroupBy = function(obj)
     if (!util.isArray(obj))
         return '';
     var arr = [];
-    obj.forEach(function(x) {
+    _.forEach(obj, function(x) {
         arr.push(self.format(x, '%ff'));
     });
     var sql = arr.join(', ');
@@ -886,7 +864,7 @@ SqlFormatter.prototype.formatGroupBy = function(obj)
 SqlFormatter.prototype.formatInsert = function(obj)
 {
     var self= this, sql = '';
-    if (!Object.isObject(obj.$insert))
+    if (_.isNil(obj.$insert))
         throw new Error('Insert expression cannot be empty at this context.');
     //get entity name
     var entity = Object.key(obj.$insert);
@@ -896,15 +874,14 @@ SqlFormatter.prototype.formatInsert = function(obj)
     for(var prop in obj1)
         if (obj1.hasOwnProperty(prop))
             props.push(prop);
-    //add basic INSERT statement
-    sql = sql.concat('INSERT INTO ', self.escapeName(entity), '(' , props.map(function(x) { return self.escapeName(x); }).join(', '), ') VALUES (',
-        array(props).select(function(x)
+    sql = sql.concat('INSERT INTO ', self.escapeName(entity), '(' , _.map(props, function(x) { return self.escapeName(x); }).join(', '), ') VALUES (',
+        _.map(props, function(x)
         {
             var value = obj1[x];
             return self.escape(value!=null ? value: null);
-        }).toArray().join(', ') ,')');
+        }).join(', ') ,')');
     return sql;
-}
+};
 
 /**
  * Formats an update query to the equivalent SQL statement
@@ -914,7 +891,7 @@ SqlFormatter.prototype.formatInsert = function(obj)
 SqlFormatter.prototype.formatUpdate = function(obj)
 {
     var self= this, sql = '';
-    if (!Object.isObject(obj.$update))
+    if (!_.isObject(obj.$update))
         throw new Error('Update expression cannot be empty at this context.');
     //get entity name
     var entity = Object.key(obj.$update);
@@ -926,16 +903,15 @@ SqlFormatter.prototype.formatUpdate = function(obj)
             props.push(prop);
     //add basic INSERT statement
     sql = sql.concat('UPDATE ', self.escapeName(entity), ' SET ',
-        array(props).select(function(x)
+        _.map(props, function(x)
         {
             var value = obj1[x];
             return self.escapeName(x).concat('=', self.escape(value!=null ? value: null));
-        }).toArray().join(', '));
-    //add WHERE statement
-    if (Object.isObject(obj.$where))
+        }).join(', '));
+    if (_.isObject(obj.$where))
         sql = sql.concat(' WHERE ',this.formatWhere(obj.$where));
     return sql;
-}
+};
 
 /**
  * Formats a delete query to the equivalent SQL statement
@@ -951,10 +927,10 @@ SqlFormatter.prototype.formatDelete = function(obj)
     var entity = obj.$delete;
     //add basic INSERT statement
     sql = sql.concat('DELETE FROM ', this.escapeName(entity));
-    if (Object.isObject(obj.$where))
+    if (_.isObject(obj.$where))
         sql = sql.concat(' WHERE ',this.formatWhere(obj.$where));
     return sql;
-}
+};
 
 SqlFormatter.prototype.escapeName = function(name) {
     if (typeof name === 'string')
@@ -1033,7 +1009,7 @@ SqlFormatter.prototype.formatFieldEx = function(obj, format)
         }
         return useAlias ? s.concat(' AS ', this.escapeName(alias)) : s;
     }
-}
+};
 /**
  * Formats a query expression and returns the SQL equivalent string
  * @param obj {QueryExpression|*}
@@ -1054,7 +1030,7 @@ SqlFormatter.prototype.format = function(obj, s)
             if (typeof obj === 'string')
                 field.select(obj);
             else
-                field = util._extend(new QueryField(), obj)
+                field = util._extend(new QueryField(), obj);
             return this.formatFieldEx(field, s);
         }
         else if (s=='%o') {
@@ -1074,15 +1050,15 @@ SqlFormatter.prototype.format = function(obj, s)
     else
         query = util._extend(new QueryExpression(), obj);
     //format query
-    if (Object.isObject(query.$select)) {
+    if (_.isObject(query.$select)) {
         if (!query.hasPaging())
             return this.formatSelect(query);
         else
             return this.formatLimitSelect(query);
     }
-    else if (Object.isObject(query.$insert))
+    else if (_.isObject(query.$insert))
         return this.formatInsert(query);
-    else if (Object.isObject(query.$update))
+    else if (_.isObject(query.$update))
         return this.formatUpdate(query);
     else if (query.$delete!=null)
         return this.formatDelete(query);

@@ -78,17 +78,6 @@ if (typeof Array.prototype.forEach === 'undefined') {
 
 }
 
-if (typeof Object.isNullOrUndefined !== 'function') {
-    /**
-     * Gets a boolean that indicates whether the given object is null or undefined
-     * @param {*} obj
-     * @returns {boolean}
-     */
-    Object.isNullOrUndefined = function(obj) {
-        return (typeof obj === 'undefined') || (obj==null);
-    }
-}
-
 if (typeof Object.key !== 'function') {
     /**
      * Gets a string that represents the name of the very first property of an object. This operation may be used in anonymous object types.

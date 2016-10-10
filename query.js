@@ -11,6 +11,14 @@
 /**
  * Created by kbarbounakis on 16/7/2014.
  */
+
+/**
+ * @ignore
+ */
+var util = require('util'),
+    _ = require('lodash'),
+    natives = require('./natives');
+
 /**
  * @class QueryParameter
  * @constructor
@@ -18,7 +26,6 @@
 function QueryParameter() {
 
 }
-
 
 /**
  * @class QueryFieldAggregator
@@ -55,12 +62,7 @@ QueryFieldAggregator.prototype.wrapWith = function(comparison) {
     throw new Error('Invalid aggregate expression. Aggregator is missing.');
 };
 
-/**
- * @ignore
- */
-var util = require('util'),
-    _=require('lodash'),
-    natives = require('./natives');
+
 
 /**
  * @class QueryExpression
@@ -216,7 +218,7 @@ QueryExpression.prototype.fields = function() {
     var fields = [];
     //get fields
     var re = QueryField.fieldNameExpression, arr = this.$select[entity] || [];
-    arr.forEach(function(x)
+    _.forEach(arr, function(x)
     {
         if (typeof x === 'string') {
             //todo:add entity alias (if (/^[A-Za-z]+$/.test(x))
@@ -233,14 +235,14 @@ QueryExpression.prototype.fields = function() {
         }
     });
     //enumerate join fields
-    joins.forEach(function(x)
+    _.forEach(joins, function(x)
     {
         if (x.$entity instanceof QueryExpression) {
             //todo::add fields if any
         }
         else {
             var table = Object.key(x.$entity), tableFields = x.$entity[table] || [];
-            tableFields.forEach(function(y) {
+            _.forEach(tableFields, function(y) {
                 if (typeof x === 'string') {
                     //todo:add table alias (if (/^[A-Za-z]+$/.test(y))
                     fields.push(new QueryField(y));
@@ -260,7 +262,7 @@ QueryExpression.prototype.fields = function() {
  */
 QueryExpression.prototype.hasFilter = function()
 {
-    return Object.isObject(this.$where);
+    return _.isObject(this.$where);
 };
 /**
  * @param {Boolean} useOr
@@ -293,7 +295,7 @@ QueryExpression.prototype.prepare = function(useOr)
 QueryExpression.prototype.hasFields = function()
 {
     var self = this;
-    if (!Object.isObject(self.$select))
+    if (!_.isObject(self.$select))
         return false;
     var entity = Object.key(self.$select);
     var joins = [];
@@ -311,7 +313,7 @@ QueryExpression.prototype.hasFields = function()
     }
     var result = false;
     //enumerate join fields
-    joins.forEach(function(x)
+    _.forEach(joins, function(x)
     {
         var table = Object.key(x.$entity);
         if (util.isArray(x.$entity[table])) {
@@ -403,7 +405,7 @@ QueryExpression.prototype.insert = function(obj)
 {
     if (obj==null)
         return this;
-    if (util.isArray(obj) || !Object.isObject(obj))
+    if (util.isArray(obj) || !_.isObject(obj))
         throw new Error('Invalid argument type. Insert expression argument must be an object.');
     this.$insert = { table1: obj };
     //delete other properties (if any)
@@ -460,7 +462,7 @@ QueryExpression.prototype.set = function(obj)
 {
     if (obj==null)
         return this;
-    if (util.isArray(obj) || !Object.isObject(obj))
+    if (util.isArray(obj) || !_.isObject(obj))
         throw new Error('Invalid argument type. Update expression argument must be an object.');
     //get entity name (by property)
     var prop = Object.key(this.$update);
@@ -695,7 +697,7 @@ QueryExpression.prototype.groupBy = function(name) {
         this.$group = [];
     var self = this;
     if (util.isArray(name)) {
-        name.forEach(function (x) {
+        _.forEach(name, function (x) {
             if (x)
                 self.$group.push(x);
         });
@@ -703,7 +705,7 @@ QueryExpression.prototype.groupBy = function(name) {
     else
         this.$group.push(name);
     return this;
-}
+};
 /**
  * @param expr
  * @private
@@ -1325,8 +1327,8 @@ QueryExpression.escape = function(val)
     }
 
     if (typeof val === 'object' && Object.prototype.toString.call(val) === '[object Array]') {
-        var values = []
-        val.forEach(function(x) {
+        var values = [];
+        _.forEach(val, function(x) {
             QueryExpression.escape(x);
         });
         return values.join(',');
@@ -1441,14 +1443,14 @@ QueryField.prototype.from = function(entity)
     if (typeof entity !== 'string')
         throw  new Error('Invalid argument. Expected string');
     //get property
-    if (!Object.isNullOrUndefined(this.$name))
+    if (!_.isNil(this.$name))
     {
         if (typeof this.$name === 'string') {
             //check if an entity is already defined
             var name = this.$name;
             if (QueryField.fieldNameExpression.test(name))
             //if not append entity name
-                this.$name = entity.concat('.', name)
+                this.$name = entity.concat('.', name);
             else
             //split field name and add entity
                 this.$name = entity.concat('.', name.split('.')[1]);
@@ -1459,13 +1461,13 @@ QueryField.prototype.from = function(entity)
     else {
         //get default property
         var alias = Object.key(this);
-        if (Object.isNullOrUndefined(alias))
+        if (_.isNil(alias))
             throw new Error("Field definition cannot be empty at this context");
         //get field expression
         var expr = this[alias];
         //get field name
         var aggregate = Object.key(expr);
-        if (Object.isNullOrUndefined(aggregate))
+        if (_.isNil(aggregate))
             throw new Error("Field expression cannot be empty at this context");
         var name = expr[aggregate];
         if (QueryField.fieldNameExpression.test(name))
@@ -1739,7 +1741,7 @@ OpenDataQuery.prototype.append = function() {
             if (util.isArray(self.privates.right)) {
                 //expand values
                 var exprs = [];
-                self.privates.right.forEach(function(x) {
+                _.forEach(self.privates.right, function(x) {
                     exprs.push(self.privates.left + ' eq ' + QueryExpression.escape(x));
                 });
                 if (exprs.length>0)
@@ -1750,7 +1752,7 @@ OpenDataQuery.prototype.append = function() {
             if (util.isArray(self.privates.right)) {
                 //expand values
                 var exprs = [];
-                self.privates.right.forEach(function(x) {
+                _.forEach(self.privates.right, function(x) {
                     exprs.push(self.privates.left + ' ne ' + QueryExpression.escape(x));
                 });
                 if (exprs.length>0)

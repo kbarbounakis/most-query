@@ -28,7 +28,6 @@
     "async": "^0.9.0",
     "esprima": "~2.1.0",
     "lodash": "^4.15.0",
-    "most-array": "~1.0.1",
     "q": "^1.2.0"
   },
   "main": "index",
