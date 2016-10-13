@@ -405,14 +405,17 @@ QueryExpression.prototype.insert = function(obj)
 {
     if (obj==null)
         return this;
-    if (util.isArray(obj) || !_.isObject(obj))
-        throw new Error('Invalid argument type. Insert expression argument must be an object.');
-    this.$insert = { table1: obj };
-    //delete other properties (if any)
-    delete this.$delete;
-    delete this.$select;
-    delete this.$update;
-    return this;
+    if (_.isArray(obj) || _.isObject(obj)) {
+        this.$insert = { table1: obj };
+        //delete other properties (if any)
+        delete this.$delete;
+        delete this.$select;
+        delete this.$update;
+        return this;
+    }
+    else {
+        throw new Error('Invalid argument. Object must be an object or an array of objects');
+    }
 };
 
 
