@@ -408,7 +408,7 @@ SqlFormatter.prototype.$concat = function(p0, p1)
  */
 SqlFormatter.prototype.$indexof = function(p0, p1)
 {
-    return util.format('LOCATE(%s,%s)', this.escape(p1), this.escape(p0));
+    return util.format('(LOCATE(%s,%s)-1)', this.escape(p1), this.escape(p0));
 };
 
 SqlFormatter.prototype.$indexOf = SqlFormatter.prototype.$indexof;
