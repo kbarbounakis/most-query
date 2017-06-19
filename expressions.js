@@ -40,12 +40,21 @@ ArithmeticExpression.prototype.exprOf = function()
         throw new Error('Invalid arithmetic operator.');
     //build right operand e.g. { $add:[ 5 ] }
     var r = {};
-    if (typeof this.right === 'undefined' || this.right==null)
+    if (typeof this.right === 'undefined' || this.right==null) {
         r[this.operator]=[null];
-    else if (typeof this.right.exprOf === 'function')
-        r[this.operator] = [this.right.exprOf()];
-    else
+    }
+    else if (typeof this.right.exprOf === 'function') {
+        if (this.right instanceof MemberExpression) {
+            r[this.operator] = [{ "$name": this.right.exprOf() }];
+        }
+        else {
+            r[this.operator] = [this.right.exprOf()];
+        }
+
+    }
+    else {
         r[this.operator]=[this.right];
+    }
     //add left operand e.g { Price: { $add:[ 5 ] } }
     var result = {};
     result[p] = r;

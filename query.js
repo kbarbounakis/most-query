@@ -478,17 +478,17 @@ QueryExpression.prototype.set = function(obj)
 
 /**
  *
- * @param props {Array}
+ * @param {Array} props
  * @returns {QueryExpression}
  */
 QueryExpression.prototype.select = function(props)
 {
-    if (props==null)
+    if (_.isNil(props))
         return this;
     var fields = [];
     if (!util.isArray(props))
     {
-        if (typeof props == 'string')
+        if (typeof props === 'string')
             fields.push(props);
         else
             throw new Error('Invalid argument type. Select argument must be an array.');

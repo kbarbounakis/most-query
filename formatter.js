@@ -77,7 +77,7 @@ function SqlFormatter() {
  */
 SqlFormatter.prototype.formatComparison = function(comparison)
 {
-    if (comparison==null || typeof comparison=== 'undefined')
+    if (_.isNil(comparison))
         return '(%s IS NULL)';
     if (typeof comparison === 'object')
     {
@@ -89,7 +89,7 @@ SqlFormatter.prototype.formatComparison = function(comparison)
             if (comparison.hasOwnProperty(key))
                 compares.push(key);
         }
-        if (compares.length==0)
+        if (compares.length===0)
             return '(%s IS NULL)';
         else {
             var arr = [], op = '=';
@@ -110,7 +110,7 @@ SqlFormatter.prototype.formatComparison = function(comparison)
                 }
             }
             //join expression
-            if (arr.length==1)
+            if (arr.length===1)
                 return arr[0];
             else if (arr.length>1) {
                 return '('.concat(arr.join(' AND '),')');
@@ -149,6 +149,19 @@ SqlFormatter.prototype.escape = function(value,unquoted)
             return sqlutils.escape(value);
         if (value.hasOwnProperty('$name'))
             return this.escapeName(value.$name);
+        else {
+            //check if value is a known expression e.g. { $length:"name" }
+            var keys = _.keys(value),
+                key0 = keys[0];
+            if (_.isString(key0) && /^\$/.test(key0) && _.isFunction(this[key0])) {
+                var exprFunc = this[key0];
+                //get arguments
+                var args = _.map(keys, function(x) {
+                    return value[x];
+                });
+                return exprFunc.apply(this, args);
+            }
+        }
     }
     if (unquoted)
         return value.valueOf();
@@ -187,11 +200,11 @@ SqlFormatter.prototype.formatWhere = function(where)
             break;
         case '$and':
         case '$or':
-            var separator = property=='$or' ? ' OR ' : ' AND ';
+            var separator = property==='$or' ? ' OR ' : ' AND ';
             //property value must be an array
             if (!util.isArray(propertyValue))
                 throw new Error('Invalid query argument. A logical expression must contain one or more comparison expressions.');
-            if (propertyValue.length==0)
+            if (propertyValue.length===0)
                 return '';
             return '(' + _.map(propertyValue, function(x) {
                 return self.formatWhere(x);
@@ -204,7 +217,7 @@ SqlFormatter.prototype.formatWhere = function(where)
                 op = '$eq';
                 comparison = {$eq:propertyValue};
             }
-            else if (typeof comparison === 'object' && comparison != null) {
+            else if (typeof comparison === 'object' && comparison !== null) {
                 //get comparison operator
                 op = Object.keys(comparison)[0];
             }
@@ -373,7 +386,18 @@ SqlFormatter.prototype.$regex = function(p0, p1)
  */
 SqlFormatter.prototype.$length = function(p0)
 {
-    return util.format('LEN(%s)', this.escape(p0));
+    return util.format('LENGTH(%s)', this.escape(p0));
+};
+
+/**
+ * Implements length(a) expression formatter.
+ * @param {*} p0
+ * @param {*} p1
+ * @returns {string}
+ */
+SqlFormatter.prototype.$ifnull = function(p0,p1)
+{
+    return util.format('COALESCE(%s,%s)', this.escape(p0), this.escape(p1));
 };
 
 /**
@@ -997,10 +1021,6 @@ SqlFormatter.prototype.formatFieldEx = function(obj, format)
             default :
                 var fn = this[prop];
                 if (typeof fn === 'function') {
-                    /**
-                     * get method arguments
-                     * @type {Array}
-                     */
                     var args = expr[prop];
                     s = fn.apply(this,args);
                 }
