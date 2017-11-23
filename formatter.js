@@ -337,6 +337,7 @@ SqlFormatter.prototype.formatWhere = function(where)
     }
 };
 
+
 /**
  * Implements startsWith(a,b) expression formatter.
  * @param {*} p0

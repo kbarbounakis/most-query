@@ -28,19 +28,19 @@ ArithmeticExpression.OperatorRegEx = /^(\$add|\$sub|\$mul|\$div|\$mod)$/g;
 ArithmeticExpression.prototype.exprOf = function()
 {
     var p;
-    if (typeof this.left === 'undefined' || this.left==null)
+    if (typeof this.left === 'undefined' || this.left===null)
         throw new Error('Expected left operand');
     else if (typeof this.left.exprOf === 'function')
         p = this.left.exprOf();
     else
         p = this.left;
-    if (typeof this.operator === 'undefined' || this.operator==null)
+    if (typeof this.operator === 'undefined' || this.operator===null)
         throw new Error('Expected arithmetic operator.');
-    if (this.operator.match(ArithmeticExpression.OperatorRegEx)==null)
+    if (this.operator.match(ArithmeticExpression.OperatorRegEx)===null)
         throw new Error('Invalid arithmetic operator.');
     //build right operand e.g. { $add:[ 5 ] }
     var r = {};
-    if (typeof this.right === 'undefined' || this.right==null) {
+    if (typeof this.right === 'undefined' || this.right===null) {
         r[this.operator]=[null];
     }
     else if (typeof this.right.exprOf === 'function') {
@@ -148,7 +148,7 @@ ComparisonExpression.prototype.exprOf = function()
         if (typeof this.right === 'undefined' || this.right==null)
             p[this.operator]=null;
         else if (typeof this.right.exprOf === 'function')
-            p[this.operator] = this.right.exprOf();
+            p[this.operator] = (this.right instanceof MemberExpression) ? { $name:this.right.exprOf() } : this.right.exprOf();
         else
             p[this.operator]=this.right;
 
@@ -163,10 +163,10 @@ ComparisonExpression.prototype.exprOf = function()
     {
         var p = {};
         //build comparison expression e.g. { $gt:10 }
-        if (typeof this.right === 'undefined' || this.right==null)
+        if (typeof this.right === 'undefined' || this.right===null)
             p[this.operator]=null;
         else if (typeof this.right.exprOf === 'function')
-            p[this.operator] = this.right.exprOf();
+            p[this.operator] = (this.right instanceof MemberExpression) ? { $name:this.right.exprOf() } : this.right.exprOf();
         else
             p[this.operator]=this.right;
 
@@ -174,7 +174,7 @@ ComparisonExpression.prototype.exprOf = function()
         var expr = this.left.exprOf();
         //find argument list
         var name = Object.keys(expr)[0];
-        if (this.operator=='$eq')
+        if (this.operator==='$eq')
             expr[name][this.left.operator].push(p.$eq);
         else
             expr[name][this.left.operator].push(p);
@@ -185,15 +185,16 @@ ComparisonExpression.prototype.exprOf = function()
     {
         var p = {};
         //build comparison expression e.g. { $gt:10 }
-        if (typeof this.right === 'undefined' || this.right==null)
+        if (typeof this.right === 'undefined' || this.right===null)
             p[this.operator]=null;
-        else if (typeof this.right.exprOf === 'function')
-            p[this.operator] = this.right.exprOf();
+        else if (typeof this.right.exprOf === 'function') {
+            p[this.operator] = (this.right instanceof MemberExpression) ? { $name:this.right.exprOf() } : this.right.exprOf();
+        }
         else
             p[this.operator]=this.right;
         var name = this.left.name;
         var expr = {};
-        if (this.operator=='$eq')
+        if (this.operator==='$eq' && !(this.right instanceof MemberExpression))
             expr[name]=p.$eq;
         else
             expr[name] = p;
@@ -242,7 +243,7 @@ MethodCallExpression.prototype.exprOf = function() {
             if (typeof arg === 'undefined' || arg==null)
                 method[name].push(null);
             else if (typeof arg.exprOf === 'function')
-                method[name].push(arg.exprOf());
+                method[name].push((arg instanceof MemberExpression) ? { $name:arg.exprOf() } : arg.exprOf());
             else
                 method[name].push(arg);
         }
