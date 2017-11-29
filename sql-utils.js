@@ -10,11 +10,11 @@
  */
 
 function convertTimezone(tz) {
-    if (tz == "Z") return 0;
+    if (tz === "Z") return 0;
 
     var m = tz.match(/([\+\-\s])(\d\d):?(\d\d)?/);
     if (m) {
-        return (m[1] == '-' ? -1 : 1) * (parseInt(m[2], 10) + ((m[3] ? parseInt(m[3], 10) : 0) / 60)) * 60;
+        return (m[1] === '-' ? -1 : 1) * (parseInt(m[2], 10) + ((m[3] ? parseInt(m[3], 10) : 0) / 60)) * 60;
     }
     return false;
 }
@@ -30,7 +30,7 @@ function zeroPad(number, length) {
 function dateToString(date, timeZone) {
     var dt = new Date(date);
 
-    if (timeZone != 'local') {
+    if (timeZone !== 'local') {
         var tz = convertTimezone(timeZone);
 
         dt.setTime(dt.getTime() + (dt.getTimezoneOffset() * 60000));
@@ -50,6 +50,10 @@ function dateToString(date, timeZone) {
     return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second + '.' + millisecond;
 }
 
+/**
+ * @param {Buffer} buffer
+ * @returns {string}
+ */
 function bufferToString(buffer) {
     var hex = '';
     try {
@@ -145,7 +149,7 @@ function escape(val, stringifyObjects, timeZone) {
 }
 
 function format(sql, values, stringifyObjects, timeZone) {
-    values = values == null ? [] : [].concat(values);
+    values = (typeof values === 'undefined' || values === null) ? [] : [].concat(values);
     var index = 0;
     return sql.replace(/\?\??/g, function(match) {
         if (index === values.length) {
@@ -159,25 +163,22 @@ function format(sql, values, stringifyObjects, timeZone) {
 }
 
 if (typeof exports !== 'undefined') {
-
-    module.exports = {
-        /**
-         * Escapes the given value and returns an equivalent string which is going to be used in SQL expressions.
-         * @param {*} val
-         * @returns {*}
-         */
-        escape: function(val) {
-            return escape(val);
-        },
-        /**
-         * Formats the given SQL expression string and replaces parameters with the given parameters, if any.
-         * e.g. * SELECT * FROM User where username=? with values: ['user1'] etc.
-         * @param {string} sql
-         * @param {*=} values
-         * @returns {*}
-         */
-        format: function(sql, values) {
-            return format(sql, values);
-        }
+    /**
+     * Escapes the given value and returns an equivalent string which is going to be used in SQL expressions.
+     * @param {*} val
+     * @returns {*}
+     */
+    module.exports.escape = function(val) {
+        return escape(val);
+    };
+    /**
+     * Formats the given SQL expression string and replaces parameters with the given parameters, if any.
+     * e.g. * SELECT * FROM User where username=? with values: ['user1'] etc.
+     * @param {string} sql
+     * @param {*=} values
+     * @returns {*}
+     */
+    module.exports.format = function(sql, values) {
+        return format(sql, values);
     };
 }

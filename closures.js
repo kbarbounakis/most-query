@@ -8,8 +8,7 @@
  * Released under the BSD3-Clause license
  * Date: 2015-03-12
  */
-var util = require('util'),
-    expressions = require('./expressions'),
+var expressions = require('./expressions'),
     esprima = require('esprima'),
     async = require('async'),
     _ = require('lodash');
@@ -51,7 +50,7 @@ function ClosureParser() {
  */
 ClosureParser.prototype.parseFilter = function(fn, callback) {
     var self = this;
-    if (typeof fn === 'undefined' || fn == null ) {
+    if (typeof fn === 'undefined' || fn === null ) {
         callback();
         return;
     }
@@ -67,7 +66,7 @@ ClosureParser.prototype.parseFilter = function(fn, callback) {
         //get named parameters
         self.namedParams = fnExpr.params;
         //validate expression e.g. return [EXPRESSION];
-        if (fnExpr.body.body[0].type!=ExpressionTypes.ReturnStatement) {
+        if (fnExpr.body.body[0].type!==ExpressionTypes.ReturnStatement) {
             callback(new Error('Invalid closure syntax. A closure expression must return a value.'));
             return;
         }
@@ -117,7 +116,7 @@ ClosureParser.prototype.parseCommon = function(expr, callback) {
 ClosureParser.prototype.parseLogical = function(expr, callback) {
     var self = this;
     var op = (expr.operator === '||') ? expressions.Operators.Or : expressions.Operators.And;
-    //valdate operands
+    //validate operands
     if (_.isNil(expr.left) || _.isNil(expr.right)) {
         callback(new Error('Invalid logical expression. Left or right operand is missig or undefined.'));
     }
@@ -141,7 +140,11 @@ ClosureParser.prototype.parseLogical = function(expr, callback) {
     }
 
 };
-
+/**
+ * @static
+ * @param {string} op
+ * @returns {*}
+ */
 ClosureParser.BinaryToExpressionOperator = function(op) {
   switch (op) {
       case '===':
@@ -446,7 +449,8 @@ ClosureParser.prototype.parseLiteral = function(expr, callback) {
 
 /**
  * Abstract function which resolves entity based on the given member name
- * @param {String} member
+ * @param {string} member
+ * @param {Function} callback
  */
 ClosureParser.prototype.resolveMember = function(member, callback)
 {
@@ -491,7 +495,7 @@ var closures = {
         parser.eval = function(o) { return eval(o); };
         return parser;
     }
-}
+};
 
 if (typeof exports !== 'undefined')
 {

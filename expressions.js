@@ -60,7 +60,7 @@ ArithmeticExpression.prototype.exprOf = function()
     result[p] = r;
     //return query expression
     return result;
-}
+};
 
 /**
  * @class MemberExpression
@@ -72,11 +72,12 @@ function MemberExpression(name) {
 }
 MemberExpression.prototype.exprOf = function() {
     return this.name;
-}
+};
 
 /**
- * @class LogicalExpression
- * @param {String} name The name of the current member
+ * @class
+ * @param {string} oper
+ * @param {*} args
  * @constructor
  */
 function LogicalExpression(oper, args) {
@@ -87,17 +88,17 @@ function LogicalExpression(oper, args) {
 LogicalExpression.OperatorRegEx = /^(\$and|\$or|\$not|\$nor)$/g;
 
 LogicalExpression.prototype.exprOf = function() {
-    if (this.operator.match(LogicalExpression.OperatorRegEx)==null)
+    if (this.operator.match(LogicalExpression.OperatorRegEx)===null)
         throw new Error('Invalid logical operator.');
     if (!util.isArray(this.args))
         throw new Error('Logical expression arguments cannot be null at this context.');
-    if (this.args.length==0)
+    if (this.args.length===0)
         throw new Error('Logical expression arguments cannot be empty.');
     var p = {};
     p[this.operator] = [];
     for (var i = 0; i < this.args.length; i++) {
         var arg = this.args[i];
-        if (typeof arg === 'undefined' || arg==null)
+        if (typeof arg === 'undefined' || arg===null)
             p[this.operator].push(null);
         else if (typeof arg.exprOf === 'function')
             p[this.operator].push(arg.exprOf());
@@ -105,7 +106,7 @@ LogicalExpression.prototype.exprOf = function() {
             p[this.operator].push(arg);
     }
     return p;
-}
+};
 
 /**
  * @class LiteralExpression
@@ -119,7 +120,7 @@ LiteralExpression.prototype.exprOf = function() {
     if (typeof this.value === 'undefined')
         return null;
     return this.value;
-}
+};
 
 /**
  *
@@ -139,20 +140,21 @@ ComparisonExpression.OperatorRegEx = /^(\$eq|\$ne|\$lte|\$lt|\$gte|\$gt|\$in|\$n
 
 ComparisonExpression.prototype.exprOf = function()
 {
-    if (typeof this.operator === 'undefined' || this.operator==null)
+    if (typeof this.operator === 'undefined' || this.operator===null)
         throw new Error('Expected comparison operator.');
 
+    var p, expr, name;
     if (this.left instanceof MethodCallExpression)
     {
-        var p = {};
-        if (typeof this.right === 'undefined' || this.right==null)
+        p = {};
+        if (typeof this.right === 'undefined' || this.right===null)
             p[this.operator]=null;
         else if (typeof this.right.exprOf === 'function')
             p[this.operator] = (this.right instanceof MemberExpression) ? { $name:this.right.exprOf() } : this.right.exprOf();
         else
             p[this.operator]=this.right;
 
-        if (this.operator=='$eq')
+        if (this.operator==='$eq')
             this.left.args.push(p.$eq);
         else
             this.left.args.push(p);
@@ -161,7 +163,7 @@ ComparisonExpression.prototype.exprOf = function()
     }
     else if (this.left instanceof ArithmeticExpression)
     {
-        var p = {};
+        p = {};
         //build comparison expression e.g. { $gt:10 }
         if (typeof this.right === 'undefined' || this.right===null)
             p[this.operator]=null;
@@ -171,9 +173,9 @@ ComparisonExpression.prototype.exprOf = function()
             p[this.operator]=this.right;
 
         //get left expression
-        var expr = this.left.exprOf();
+        expr = this.left.exprOf();
         //find argument list
-        var name = Object.keys(expr)[0];
+        name = Object.keys(expr)[0];
         if (this.operator==='$eq')
             expr[name][this.left.operator].push(p.$eq);
         else
@@ -183,7 +185,7 @@ ComparisonExpression.prototype.exprOf = function()
     }
     else if (this.left instanceof MemberExpression)
     {
-        var p = {};
+        p = {};
         //build comparison expression e.g. { $gt:10 }
         if (typeof this.right === 'undefined' || this.right===null)
             p[this.operator]=null;
@@ -192,8 +194,8 @@ ComparisonExpression.prototype.exprOf = function()
         }
         else
             p[this.operator]=this.right;
-        var name = this.left.name;
-        var expr = {};
+        name = this.left.name;
+        expr = {};
         if (this.operator==='$eq' && !(this.right instanceof MemberExpression))
             expr[name]=p.$eq;
         else
@@ -201,7 +203,7 @@ ComparisonExpression.prototype.exprOf = function()
         //return query expression
         return expr;
     }
-}
+};
 
 /**
  * Creates a method call expression
@@ -232,15 +234,15 @@ MethodCallExpression.prototype.exprOf = function() {
     var name = '$'.concat(this.name);
     //set arguments array
     method[name] = [] ;
-    if (this.args.length==0)
+    if (this.args.length===0)
         throw new Error('Unsupported method expression. Method arguments cannot be empty.');
     //get first argument
     if (this.args[0] instanceof MemberExpression) {
-        member = this.args[0].name;
+        var member = this.args[0].name;
         for (var i = 1; i < this.args.length; i++)
         {
             var arg = this.args[i];
-            if (typeof arg === 'undefined' || arg==null)
+            if (typeof arg === 'undefined' || arg===null)
                 method[name].push(null);
             else if (typeof arg.exprOf === 'function')
                 method[name].push((arg instanceof MemberExpression) ? { $name:arg.exprOf() } : arg.exprOf());
@@ -254,7 +256,7 @@ MethodCallExpression.prototype.exprOf = function() {
         throw new Error('Unsupported method expression. The first argument of a method expression must be always a MemberExpression.');
     }
 
-}
+};
 
 var expressions = {
 
@@ -283,29 +285,11 @@ var expressions = {
         // Conditional OR
         Or:'$or'
     },
-    /**
-     * @class ArithmeticExpression
-     */
     ArithmeticExpression:ArithmeticExpression,
-    /**
-     * @class MemberExpression
-     */
     MemberExpression:MemberExpression,
-    /**
-     * @class MethodCallExpression
-     */
     MethodCallExpression:MethodCallExpression,
-    /**
-     * @class ComparisonExpression
-     */
     ComparisonExpression:ComparisonExpression,
-    /**
-     * @class LiteralExpression
-     */
     LiteralExpression:LiteralExpression,
-    /**
-     * @class LiteralExpression
-     */
     LogicalExpression:LogicalExpression,
     /**
      * @param {*=} left The left operand
@@ -370,7 +354,7 @@ var expressions = {
      */
     isArithmeticOperator: function(op) {
         if (typeof op === 'string')
-            return (op.match(ArithmeticExpression.OperatorRegEx)!=null);
+            return (op.match(ArithmeticExpression.OperatorRegEx)!==null);
         return false;
     },
     /**
@@ -379,7 +363,7 @@ var expressions = {
      */
     isComparisonOperator: function(op) {
         if (typeof op === 'string')
-            return (op.match(ComparisonExpression.OperatorRegEx)!=null);
+            return (op.match(ComparisonExpression.OperatorRegEx)!==null);
         return false;
     },
     /**
@@ -388,7 +372,7 @@ var expressions = {
      */
     isLogicalOperator: function(op) {
         if (typeof op === 'string')
-            return (op.match(LogicalExpression.OperatorRegEx)!=null);
+            return (op.match(LogicalExpression.OperatorRegEx)!==null);
         return false;
     },
     /**
@@ -427,7 +411,7 @@ var expressions = {
     isMethodCallExpression: function(obj) {
         return obj instanceof MethodCallExpression;
     }
-}
+};
 
 if (typeof exports !== 'undefined')
 {

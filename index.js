@@ -22,9 +22,6 @@ var util = require('util'),
     QueryEntity = qryq.QueryEntity,
     OpenDataQuery = qryq.OpenDataQuery;
 
-/**
- * @exports most-query
- */
 var qry = { };
 
 qry.classes = {

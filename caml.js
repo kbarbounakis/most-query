@@ -5,7 +5,7 @@
  *
  * Copyright (c) 2014, Kyriakos Barbounakis k.barbounakis@gmail.com, Anthi Oikonomou anthioikonomou@gmail.com
  *
- * Released under the BSD3-Clause license
+ * Released under the BSD-3-Clause license
  * Date: 2014-04-13
  */
 var util = require('util');
@@ -17,15 +17,15 @@ var util = require('util');
 function XmlSerializable() {
     //
 }
-
+// noinspection JSUnusedGlobalSymbols
 XmlSerializable.prototype.getSchema = function() {
     return null;
 };
-
+// noinspection JSUnusedGlobalSymbols
 XmlSerializable.prototype.writeXml = function() {
     return null;
 };
-
+// noinspection JSUnusedGlobalSymbols
 XmlSerializable.prototype.readXml = function() {
     return null;
 };
@@ -39,6 +39,7 @@ function FieldRef() {
      * @type {String}
      */
     this.name = undefined;
+    // noinspection JSUnusedGlobalSymbols
     /**
      * @type {Boolean}
      */
@@ -47,6 +48,7 @@ function FieldRef() {
 
 util.inherits(FieldRef, XmlSerializable);
 
+// noinspection JSUnusedGlobalSymbols
 FieldRef.prototype.getSchema = function() {
     return {
         element: { name: 'FieldRef', namespace: null },
@@ -62,7 +64,7 @@ var caml = {
      * @class FieldRef
      */
     FieldRef:FieldRef
-}
+};
 
 if (typeof exports !== 'undefined')
 {

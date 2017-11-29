@@ -44,7 +44,7 @@ if (typeof Array.prototype.forEach === 'undefined') {
      */
     var forEach = function (callback, thisArg) {
         var T, k;
-        if (this == null) {
+        if (this === null) {
             throw new TypeError(" this is null or not defined");
         }
         var O = Object(this);
@@ -66,15 +66,18 @@ if (typeof Array.prototype.forEach === 'undefined') {
         }
     };
 
-    if (Object.defineProperty) {
-        try {
-            Object.defineProperty(Array.prototype, 'forEach', {
-                value: forEach, configurable: true, enumerable: false, writable: true
+    if (typeof Object.defineProperty === 'function') {
+        Object.defineProperty(Array.prototype, 'forEach',
+            {
+                value: forEach,
+                configurable: true,
+                enumerable: false,
+                writable: true
             });
-        } catch(e) {}
     }
-
-    if (!Array.prototype.forEach) { Array.prototype.forEach = forEach; }
+    else {
+        Array.prototype.forEach = forEach;
+    }
 
 }
 
@@ -85,7 +88,7 @@ if (typeof Object.key !== 'function') {
      * @returns {string}
      */
     Object.key = function(obj) {
-        if (typeof obj === 'undefined' || obj == null)
+        if (typeof obj === 'undefined' || obj === null)
             return null;
         for(var prop in obj) {
             if (obj.hasOwnProperty(prop))
@@ -101,7 +104,7 @@ if (typeof Object.clear !== 'function') {
      * @param {*} obj
      */
     Object.clear = function(obj) {
-        if (typeof obj === 'undefined' || obj == null)
+        if (typeof obj === 'undefined' || obj === null)
             return;
         var arr = [];
         for (var key1 in obj)
