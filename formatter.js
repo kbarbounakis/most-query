@@ -130,7 +130,7 @@ SqlFormatter.prototype.isComparison = function(obj) {
  */
 SqlFormatter.prototype.escape = function(value,unquoted)
 {
-    if (value===null || typeof value==='undefined')
+    if (_.isNil(value))
         return sqlutils.escape(null);
 
     if (typeof value === 'object')
@@ -221,7 +221,7 @@ SqlFormatter.prototype.formatWhere = function(where)
                 case '$text':
                     return self.$text({ $name:property}, comparison.$text.$search);
                 case '$eq':
-                    if (typeof comparison.$eq === 'undefined' || comparison.$eq===null)
+                    if (_.isNil(comparison.$eq))
                         return util.format('(%s IS NULL)', escapedProperty);
                     return util.format('(%s=%s)', escapedProperty, self.escape(comparison.$eq));
                 case '$gt':
@@ -233,7 +233,7 @@ SqlFormatter.prototype.formatWhere = function(where)
                 case '$lte':
                     return util.format('(%s<=%s)', escapedProperty, self.escape(comparison.$lte));
                 case '$ne':
-                    if (typeof comparison.$ne === 'undefined' || comparison.$ne===null)
+                    if (_.isNil(comparison.$ne))
                         return util.format('(NOT %s IS NULL)', escapedProperty);
                     if (comparison!==null)
                         return util.format('(NOT %s=%s)', escapedProperty, self.escape(comparison.$ne));
@@ -540,7 +540,7 @@ SqlFormatter.prototype.$add = function(p0, p1)
  * @returns {boolean}
  */
 SqlFormatter.prototype.isField = function(obj) {
-    if (obj==null || typeof obj==='undefined')
+    if (_.isNil(obj))
         return false;
     if (typeof obj === 'object')
         if (obj.hasOwnProperty('$name'))
@@ -793,7 +793,7 @@ SqlFormatter.prototype.formatLimitSelect = function(obj) {
 SqlFormatter.prototype.formatField = function(obj)
 {
     var self = this;
-    if (obj===null)
+    if (_.isNil(obj))
         return '';
     if (typeof obj === 'string')
         return obj;
@@ -837,7 +837,7 @@ SqlFormatter.prototype.formatOrder = function(obj)
     var sql = _.map(obj, function(x)
     {
         var f = x.$desc ? x.$desc : x.$asc;
-        if (typeof f === 'undefined' || f===null)
+        if (_.isNil(f))
             throw new Error('An order by object must have either ascending or descending property.');
         if (util.isArray(f)) {
             return _.map(f, function(a) {
@@ -935,7 +935,7 @@ SqlFormatter.prototype.formatUpdate = function(obj)
 SqlFormatter.prototype.formatDelete = function(obj)
 {
     var sql = '';
-    if (obj.$delete===null)
+    if (_.isNil(obj.$delete))
         throw new Error('Delete expression cannot be empty at this context.');
     //get entity name
     var entity = obj.$delete;
@@ -953,7 +953,7 @@ SqlFormatter.prototype.escapeName = function(name) {
 };
 
 function isQueryField_(obj) {
-    if ((typeof obj === 'undefined') || (obj===null))
+    if (_.isNil(obj))
         return false;
     return (obj.constructor) && (obj.constructor.name === 'QueryField');
 }
@@ -966,13 +966,13 @@ function isQueryField_(obj) {
 SqlFormatter.prototype.formatFieldEx = function(obj, format)
 {
 
-    if ((typeof obj === 'undefined') || (obj===null))
+    if (_.isNil(obj))
         return null;
     if (!isQueryField_(obj))
         throw new Error('Invalid argument. An instance of QueryField class is expected.');
     //get property
     var prop = Object.key(obj);
-    if (prop===null)
+    if (_.isNil(prop))
         return null;
     var useAlias = (format==='%f');
     if (prop==='$name') {
@@ -980,7 +980,7 @@ SqlFormatter.prototype.formatFieldEx = function(obj, format)
     }
     else {
         var expr = obj[prop];
-        if (expr===null)
+        if (_.isNil(expr))
             throw new Error('Field definition cannot be empty while formatting.');
         if (typeof expr === 'string') {
             return useAlias ? this.escapeName(expr).concat(' AS ', this.escapeName(prop)) : expr;
@@ -1028,7 +1028,7 @@ SqlFormatter.prototype.formatFieldEx = function(obj, format)
  */
 SqlFormatter.prototype.format = function(obj, s)
 {
-    if (obj===null)
+    if (_.isNil(obj))
         return null;
     //if a format is defined
     if (s!==undefined)

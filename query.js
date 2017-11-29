@@ -153,7 +153,7 @@ function QueryExpression()
 QueryExpression.prototype.prop = function(s)
 {
     if (typeof s === 'undefined') { return this.privates.__prop; }
-    if (s === null) { delete this.privates.__prop; }
+    if (_.isNil(s)) { delete this.privates.__prop; }
     this.privates.__prop = s;
 };
 
@@ -204,7 +204,7 @@ QueryExpression.EvaluationOperators = { $mod:'$mod', $add:'$add', $sub:'$sub', $
  */
 QueryExpression.prototype.fields = function() {
 
-    if (typeof this.$select === 'undefined' || this.$select === null)
+    if (_.isNil(this.$select))
         return [];
     var entity = Object.key(this.$select);
     var joins = [];
@@ -332,7 +332,7 @@ QueryExpression.prototype.hasFields = function()
  */
 QueryExpression.prototype.hasPaging = function()
 {
-    return (typeof this.$take !=='undefined' && this.$take!==null);
+    return !_.isNil(this.$take);
 };
 
 /**
@@ -387,7 +387,7 @@ QueryExpression.prototype.injectWhere = function(where)
  */
 QueryExpression.prototype.delete = function(entity)
 {
-    if (entity===null)
+    if (_.isNil(entity))
         return this;
     this.$delete = entity.valueOf();
     //delete other properties (if any)
@@ -404,7 +404,7 @@ QueryExpression.prototype.delete = function(entity)
  */
 QueryExpression.prototype.insert = function(obj)
 {
-    if (obj===null)
+    if (_.isNil(obj))
         return this;
     if (_.isArray(obj) || _.isObject(obj)) {
         this.$insert = { table1: obj };
@@ -421,17 +421,17 @@ QueryExpression.prototype.insert = function(obj)
 
 
 QueryExpression.prototype.into = function(entity) {
-    if (entity===null)
+    if (_.isNil(entity))
         return this;
-    if (this.$insert===null)
+    if (_.isNil(this.$insert))
         return this;
     var prop = Object.key(this.$insert);
-    if (prop===null)
+    if (_.isNil(prop))
         return this;
     if (prop===entity)
         return this;
     var value = this.$insert[prop];
-    if (value===null)
+    if (_.isNil(value))
         return this;
     this.$insert[entity] = value;
     delete this.$insert[prop];
@@ -445,7 +445,7 @@ QueryExpression.prototype.into = function(entity) {
  */
 QueryExpression.prototype.update = function(entity)
 {
-    if (entity===null)
+    if (_.isNil(entity))
         return this;
     if (typeof entity !== 'string')
         throw new Error('Invalid argument type. Update entity argument must be a string.');
@@ -464,13 +464,13 @@ QueryExpression.prototype.update = function(entity)
  */
 QueryExpression.prototype.set = function(obj)
 {
-    if (obj===null)
+    if (_.isNil(obj))
         return this;
     if (util.isArray(obj) || !_.isObject(obj))
         throw new Error('Invalid argument type. Update expression argument must be an object.');
     //get entity name (by property)
     var prop = Object.key(this.$update);
-    if (prop===null)
+    if (_.isNil(prop))
         throw new Error('Invalid operation. Update entity cannot be empty at this context.');
     //set object to update
     this.$update[prop] = obj;
@@ -522,7 +522,7 @@ QueryExpression.prototype.select = function(props)
  */
 QueryExpression.prototype.from = function(entity) {
 
-    if (entity===null)
+    if (_.isNil(entity))
         return this;
     var name;
     if (entity instanceof QueryEntity) {
@@ -559,9 +559,9 @@ QueryExpression.prototype.from = function(entity) {
  */
 QueryExpression.prototype.join = function(entity, props, alias) {
 
-    if (entity===null)
+    if (_.isNil(entity))
         return this;
-    if (this.$select===null)
+    if (_.isNil(this.$select))
         throw new Error('Query entity cannot be empty when adding a join entity.');
     var obj = {};
     if (entity instanceof QueryEntity) {
@@ -588,7 +588,7 @@ QueryExpression.prototype.join = function(entity, props, alias) {
  */
 QueryExpression.prototype.with = function(obj) {
 
-    if (obj===null)
+    if (_.isNil(obj))
         return this;
     if (_.isNil(this.privates.__expand))
         throw new Error('Join entity cannot be empty when adding a join expression. Use QueryExpression.join(entity, props) before.');
@@ -635,9 +635,9 @@ QueryExpression.prototype.with = function(obj) {
  */
 QueryExpression.prototype.orderBy = function(name) {
 
-    if (name===null)
+    if (_.isNil(name))
         return this;
-    if (this.$order===null)
+    if (_.isNil(this.$order))
         this.$order = [];
     this.$order.push({ $asc: name });
     return this;
@@ -649,9 +649,9 @@ QueryExpression.prototype.orderBy = function(name) {
  */
 QueryExpression.prototype.orderByDescending = function(name) {
 
-    if (name===null)
+    if (_.isNil(name))
         return this;
-    if (this.$order===null)
+    if (_.isNil(this.$order))
         this.$order = [];
     this.$order.push({ $desc: name });
     return this;
@@ -664,9 +664,9 @@ QueryExpression.prototype.orderByDescending = function(name) {
  */
 QueryExpression.prototype.thenBy = function(name) {
 
-    if (name===null)
+    if (_.isNil(name))
         return this;
-    if (this.$order===null)
+    if (_.isNil(this.$order))
     //throw exception (?)
         return this;
     this.$order.push({ $asc: name });
@@ -680,9 +680,9 @@ QueryExpression.prototype.thenBy = function(name) {
  */
 QueryExpression.prototype.thenByDescending = function(name) {
 
-    if (name===null)
+    if (_.isNil(name))
         return this;
-    if (this.$order===null)
+    if (_.isNil(this.$order))
     //throw exception (?)
         return this;
     this.$order.push({ $desc: name });
@@ -695,9 +695,9 @@ QueryExpression.prototype.thenByDescending = function(name) {
  */
 QueryExpression.prototype.groupBy = function(name) {
 
-    if (name===null)
+    if (_.isNil(name))
         return this;
-    if (this.$group===null)
+    if (_.isNil(this.$group))
         this.$group = [];
     var self = this;
     if (util.isArray(name)) {
@@ -1311,7 +1311,7 @@ QueryExpression.prototype.toLocaleUpperCase = function() {
 
 QueryExpression.escape = function(val)
 {
-    if (val === undefined || val === null) {
+    if (_.isNil(val)) {
         return 'null';
     }
 
@@ -1418,8 +1418,8 @@ function QueryField(obj) {
     if (typeof  obj === 'string') {
         this.$name = obj;
     }
-    else if (typeof obj === 'object' && obj!==null) {
-        util._extend(this, obj);
+    else if (_.isObject(obj)) {
+        _.assign(this, obj);
     }
 }
 /**
@@ -1565,7 +1565,7 @@ QueryField.prototype.as = function(alias) {
         throw  new Error('Invalid argument. Expected string');
     //get first property
     var prop = Object.key(this);
-    if (prop === null)
+    if (_.isNil(prop))
         throw  new Error('Invalid object state. Field is not selected.');
     var value = this[prop];
     if (prop!==alias) {
@@ -1772,7 +1772,7 @@ OpenDataQuery.prototype.append = function() {
         else
             expr = self.privates.left + ' ' + self.privates.op + ' ' + QueryExpression.escape(self.privates.right);
         if (expr) {
-            if (typeof self.$filter === 'undefined' || self.$filter === null)
+            if (_.isNil(self.$filter))
                 self.$filter = expr;
             else {
                 self.privates.lop = self.privates.lop || 'and';
@@ -1819,12 +1819,13 @@ OpenDataQuery.prototype.skip = function(val) {
 };
 
 /**
- * @param {String} name
+ * @param {string} name
  * @returns OpenDataQuery
  */
 OpenDataQuery.prototype.orderBy = function(name) {
-    if (typeof name !=='undefined' || name!==null)
+    if (!_.isNil(name)) {
         this.$orderby = name.toString();
+    }
     return this;
 };
 
@@ -1833,8 +1834,9 @@ OpenDataQuery.prototype.orderBy = function(name) {
  * @returns OpenDataQuery
  */
 OpenDataQuery.prototype.orderByDescending = function(name) {
-    if (typeof name !=='undefined' || name!==null)
+    if (!_.isNil(name)) {
         this.$orderby = name.toString() + ' desc';
+    }
     return this;
 };
 
@@ -1843,9 +1845,10 @@ OpenDataQuery.prototype.orderByDescending = function(name) {
  * @returns OpenDataQuery
  */
 OpenDataQuery.prototype.thenBy = function(name) {
-    if (typeof name !=='undefined' || name!==null) {
+    if (!_.isNil(name)) {
             this.$orderby += (this.$orderby ? ',' + name.toString() : name.toString());
     }
+    return this;
 };
 
 /**
@@ -1853,9 +1856,10 @@ OpenDataQuery.prototype.thenBy = function(name) {
  * @returns OpenDataQuery
  */
 OpenDataQuery.prototype.thenByDescending = function(name) {
-    if (typeof name !=='undefined' || name!==null) {
+    if (!_.isNil(name)) {
         this.$orderby += (this.$orderby ? ',' + name.toString() : name.toString()) + ' desc';
     }
+    return this;
 };
 
 /**

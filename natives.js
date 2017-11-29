@@ -44,7 +44,7 @@ if (typeof Array.prototype.forEach === 'undefined') {
      */
     var forEach = function (callback, thisArg) {
         var T, k;
-        if (this === null) {
+        if (typeof this === 'undefined' || this === null) {
             throw new TypeError(" this is null or not defined");
         }
         var O = Object(this);

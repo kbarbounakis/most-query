@@ -106,7 +106,7 @@ function escapeId(val, forbidQualified) {
 var STR_ESCAPE_REGEXP = /[\0\n\r\b\t\\'"\x1a]/g;
 
 function escape(val, stringifyObjects, timeZone) {
-    if (val === undefined || val === null) {
+    if (typeof val === 'undefined' || val === null) {
         return 'NULL';
     }
 
