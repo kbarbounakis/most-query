@@ -1,6 +1,6 @@
 {
   "name": "most-query",
-  "version": "0.1.35",
+  "version": "0.1.36",
   "description": "Most Web Framework Database Query Helper Module",
   "homepage": "https://github.com/kbarbounakis/most-query",
   "repository": {
@@ -27,8 +27,8 @@
   "dependencies": {
     "async": "^0.9.0",
     "esprima": "~2.1.0",
-    "lodash": "^4.15.0",
-    "q": "^1.2.0"
+    "lodash": "^4.17.10",
+    "q": "^1.5.1"
   },
   "main": "index",
   "scripts": {},
@@ -50,6 +50,6 @@
     "extends": "eslint:recommended"
   },
   "devDependencies": {
-    "eslint": "^4.12.0"
+    "eslint": "^4.19.1"
   }
 }
