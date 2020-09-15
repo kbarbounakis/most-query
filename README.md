@@ -4,7 +4,7 @@
 
 ### A newer version of MOST Web Framework is available. Happy coding!
 
-[Checkout the new exciting](https://github.com/themost-framework/themost)
+[Checkout the new exciting features](https://github.com/themost-framework/themost)
 
 # most-query
 Most Web Framework Database Query Helper Module
