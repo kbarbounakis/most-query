@@ -4,8 +4,7 @@
 
 ### A newer version of MOST Web Framework is available. Happy coding!
 
-[Checkout the new exciting features like ES7 compatibility, new @themost CLI tool, 
-EcmaScript decorators, OData v4 compatibility and many more.](https://github.com/themost-framework/themost)
+[Checkout the new exciting](https://github.com/themost-framework/themost)
 
 # most-query
 Most Web Framework Database Query Helper Module
